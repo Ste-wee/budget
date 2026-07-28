@@ -12,6 +12,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Budget">
+<script src="https://accounts.google.com/gsi/client" async></script>
 <style>
   :root {
     color-scheme: light dark;
@@ -179,6 +180,7 @@
   .menu-item { display: flex; align-items: center; gap: 11px; width: 100%; text-align: left; border: 0; background: transparent; color: var(--ink); padding: 11px 10px; border-radius: 10px; font-size: 14px; font-weight: 650; }
   .menu-item:hover { background: var(--surface-2); }
   .menu-item svg { width: 16px; height: 16px; color: var(--muted); flex: none; }
+  .menu-sep { height: 1px; background: var(--line); margin: 5px 8px; }
   .menu-status.sub { padding-top: 0; padding-bottom: 6px; }
   .dirty-chip { margin-left: auto; background: var(--warn-soft); color: var(--warn); font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 99px; }
   .dirty-chip[hidden] { display: none; }
@@ -533,6 +535,20 @@
           Esporta backup
         </button>
         <input type="file" id="importFile" class="file-hidden" accept="application/json,.json">
+        <div class="menu-sep"></div>
+        <div class="menu-status sub" id="gdriveStatus">Google Drive: non collegato</div>
+        <button class="menu-item" id="gdriveConnect" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 13V3"/><path d="m8 9 4 4 4-4"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+          Collega Google Drive
+        </button>
+        <button class="menu-item" id="gdriveSync" type="button" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>
+          Sincronizza ora
+        </button>
+        <button class="menu-item" id="gdriveDisconnect" type="button" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          Scollega Google Drive
+        </button>
       </div>
     </div>
   </div>
@@ -684,6 +700,7 @@
       saveTimer = setTimeout(function () { dot.textContent = "Salvato in locale"; }, 500);
     }
     updateBackupUI();
+    gPush();
   }
   function daysSinceBackup() { return state.lastBackup ? Math.floor((Date.now() - state.lastBackup) / 86400000) : null; }
   function updateBackupUI() {
@@ -1444,6 +1461,100 @@
   }
   wireReveal("suggBtn", "suggCard");
   wireReveal("acctBtn", "acctCard");
+
+  // ---------- Google Drive sync ----------
+  var GID = "1067931384958-k03fd8rrqese9m92m4pevmmsnm5slh88.apps.googleusercontent.com";
+  var GKEY = "budget-gdrive";
+  var gTok = null, gExp = 0, gFileId = null, gTimer = null, gClient = null;
+  function gIsOn() { try { return localStorage.getItem(GKEY) === "on"; } catch (e) { return false; } }
+  function gSetOn(v) { try { v ? localStorage.setItem(GKEY, "on") : localStorage.removeItem(GKEY); } catch (e) {} }
+  function gStatus(t) { var el = document.getElementById("gdriveStatus"); if (el) el.textContent = "Google Drive: " + t; }
+  function gUpdateUI() {
+    var on = gIsOn();
+    var c = document.getElementById("gdriveConnect"), s = document.getElementById("gdriveSync"), d = document.getElementById("gdriveDisconnect");
+    if (c) c.hidden = on; if (s) s.hidden = !on; if (d) d.hidden = !on;
+  }
+  function gInit() {
+    if (gClient) return true;
+    if (!(window.google && google.accounts && google.accounts.oauth2)) return false;
+    gClient = google.accounts.oauth2.initTokenClient({ client_id: GID, scope: "https://www.googleapis.com/auth/drive.appdata", callback: function () {} });
+    return true;
+  }
+  function gToken(interactive) {
+    return new Promise(function (resolve, reject) {
+      if (gTok && Date.now() < gExp - 60000) { resolve(gTok); return; }
+      if (!gInit()) { reject(new Error("gis")); return; }
+      var done = false;
+      var to = setTimeout(function () { if (!done) { done = true; reject(new Error("timeout")); } }, interactive ? 120000 : 8000);
+      gClient.callback = function (resp) { if (done) return; done = true; clearTimeout(to); if (resp && resp.access_token) { gTok = resp.access_token; gExp = Date.now() + (resp.expires_in || 3600) * 1000; resolve(gTok); } else reject(new Error("no-token")); };
+      gClient.error_callback = function () { if (done) return; done = true; clearTimeout(to); reject(new Error("err")); };
+      try { gClient.requestAccessToken({ prompt: interactive ? "" : "none" }); } catch (e) { if (!done) { done = true; clearTimeout(to); reject(e); } }
+    });
+  }
+  function gFetch(url, opts) { opts = opts || {}; opts.headers = opts.headers || {}; opts.headers.Authorization = "Bearer " + gTok; return fetch(url, opts); }
+  function gFind() {
+    return gFetch("https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&fields=" + encodeURIComponent("files(id)") + "&q=" + encodeURIComponent("name='budget.json'"))
+      .then(function (r) { return r.json(); }).then(function (d) { gFileId = (d.files && d.files[0]) ? d.files[0].id : null; return gFileId; });
+  }
+  function gDownload() { if (!gFileId) return Promise.resolve(null); return gFetch("https://www.googleapis.com/drive/v3/files/" + gFileId + "?alt=media").then(function (r) { return r.ok ? r.json() : null; }); }
+  function gUpload() {
+    var body = JSON.stringify(state);
+    if (gFileId) return gFetch("https://www.googleapis.com/upload/drive/v3/files/" + gFileId + "?uploadType=media", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: body });
+    var b = "bnd" + gExp;
+    var meta = JSON.stringify({ name: "budget.json", parents: ["appDataFolder"] });
+    var mp = "--" + b + "\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n" + meta + "\r\n--" + b + "\r\nContent-Type: application/json\r\n\r\n" + body + "\r\n--" + b + "--";
+    return gFetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id", { method: "POST", headers: { "Content-Type": "multipart/related; boundary=" + b }, body: mp })
+      .then(function (r) { return r.json(); }).then(function (d) { if (d && d.id) gFileId = d.id; return d; });
+  }
+  function gValid(d) { return d && d.items && d.accounts; }
+  function gApply(d) {
+    state = d;
+    if (!state.seq) state.seq = 1000;
+    if (!state.history) state.history = [];
+    if (state.dirty === undefined) state.dirty = false;
+    if (state.lastBackup === undefined) state.lastBackup = null;
+    persist(); renderGroups(); renderAccounts(); recompute(); renderHistory(); updateBackupUI();
+  }
+  function gConnect() {
+    gStatus("connessione…");
+    gToken(true).then(gFind).then(gDownload).then(function (remote) {
+      if (gValid(remote)) {
+        if (window.confirm("Su Google Drive ci sono già dei dati.\n\nOK = usa i dati di Drive su questo dispositivo\nAnnulla = tieni i dati attuali e sovrascrivi Drive")) { gApply(remote); return; }
+      }
+      return gUpload();
+    }).then(function () { gSetOn(true); gUpdateUI(); gStatus("collegato ✓"); })
+      .catch(function () { gStatus("collegamento non riuscito"); });
+  }
+  function gSyncNow() {
+    gStatus("sincronizzo…");
+    gToken(true).then(gFind).then(gDownload).then(function (remote) {
+      if (gValid(remote)) { gApply(remote); gStatus("sincronizzato ✓"); }
+      else { return gUpload().then(function () { gStatus("sincronizzato ✓"); }); }
+    }).catch(function () { gStatus("errore, riprova"); });
+  }
+  function gDisconnect() {
+    var t = gTok; gSetOn(false); gTok = null; gExp = 0; gFileId = null; gUpdateUI(); gStatus("non collegato");
+    try { if (t && window.google && google.accounts && google.accounts.oauth2) google.accounts.oauth2.revoke(t); } catch (e) {}
+  }
+  function gPush() {
+    if (!gIsOn()) return;
+    clearTimeout(gTimer);
+    gTimer = setTimeout(function () {
+      gToken(false).then(function () { return gFileId ? gUpload() : gFind().then(gUpload); })
+        .then(function () { gStatus("sincronizzato ✓"); }).catch(function () { gStatus("da sincronizzare"); });
+    }, 1500);
+  }
+  (function gBoot() {
+    var c = document.getElementById("gdriveConnect"); if (c) c.addEventListener("click", gConnect);
+    var s = document.getElementById("gdriveSync"); if (s) s.addEventListener("click", gSyncNow);
+    var d = document.getElementById("gdriveDisconnect"); if (d) d.addEventListener("click", gDisconnect);
+    gUpdateUI();
+    if (gIsOn()) {
+      gStatus("collegato");
+      var pull = function () { gToken(false).then(gFind).then(gDownload).then(function (remote) { if (gValid(remote)) gApply(remote); gStatus("sincronizzato ✓"); }).catch(function () { gStatus("collegato · tocca Sincronizza"); }); };
+      if (gInit()) pull(); else setTimeout(function () { if (gInit()) pull(); else gStatus("collegato · tocca Sincronizza"); }, 2000);
+    }
+  })();
 
   // ---------- boot ----------
   (function setMonth() {
