@@ -226,11 +226,11 @@
   .gz-card { position: relative; margin-bottom: 18px; overflow: hidden; }
   .gz-bird { position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: min(160px, 50%); z-index: 1; }
   .gz-bird svg { width: 100%; height: auto; display: block; overflow: visible; }
-  .gz-bubble { position: relative; margin-left: auto; width: max-content; max-width: 52%; display: flex; flex-direction: column; align-items: center; gap: 4px; background: var(--surface-2); border: 1px solid var(--line-strong); border-radius: 26px; padding: 14px 18px 12px; }
+  .gz-bubble { position: relative; margin-left: auto; width: max-content; max-width: 52%; display: flex; flex-direction: column; align-items: center; gap: 4px; background: var(--surface-2); border: 1px solid var(--line-strong); border-radius: 26px; padding: 12px 18px 10px; }
   .gz-bubble::before { content: ""; position: absolute; left: -6px; bottom: 12px; width: 15px; height: 15px; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--line-strong); }
   .gz-bubble::after { content: ""; position: absolute; left: -16px; bottom: 4px; width: 8px; height: 8px; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--line-strong); }
   .gz-vase { flex: none; }
-  .gz-vase svg { width: 120px; height: 150px; display: block; }
+  .gz-vase svg { width: 114px; height: 118px; display: block; }
   .gz-info { text-align: center; min-width: 0; }
   .gz-name { font-size: 14px; font-weight: 800; color: var(--ink); }
   .gz-detail { margin-top: 2px; font-size: 11.5px; color: var(--muted); line-height: 1.3; }
@@ -1496,7 +1496,7 @@
   function renderMotivation() {
     var k = monthsKept(), st = plantStage(k);
     var vase = document.getElementById("gzVase");
-    if (vase) vase.innerHTML = '<svg viewBox="0 0 120 150" width="100%" height="100%" aria-hidden="true">' + PLANT_SVG[st] + '</svg>';
+    if (vase) vase.innerHTML = '<svg viewBox="0 26 120 124" width="100%" height="100%" aria-hidden="true">' + PLANT_SVG[st] + '</svg>';
     var nm = document.getElementById("gzName"); if (nm) nm.textContent = PLANT_NAME[st];
     var det = document.getElementById("gzDetail");
     if (det) {
