@@ -223,18 +223,33 @@
   .panel.active { display: block; animation: fade .35s ease both; }
   .greeting { margin: 0 4px 2px; font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); }
   .greeting[hidden] { display: none; }
-  .coach { display: flex; align-items: center; gap: 12px; background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent); border-radius: 14px; padding: 11px 12px; margin-bottom: 14px; }
-  .coach[hidden] { display: none; }
-  .coach-ava { width: 40px; height: 40px; flex: none; border-radius: 12px; background: var(--accent); display: flex; align-items: center; justify-content: center; }
-  .coach-ava svg { width: 76%; height: 76%; display: block; }
-  .coach-msg { flex: 1; margin: 0; font-size: 13px; font-weight: 600; color: var(--accent-ink); line-height: 1.4; }
-  .coach-x { flex: none; background: none; border: 0; color: var(--accent-ink); cursor: pointer; font-size: 20px; line-height: 1; padding: 2px 6px; opacity: .55; }
-  .coach-x:hover { opacity: 1; }
-  .plant-card { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
-  .plant-art { width: 82px; height: 100px; flex: none; }
-  .plant-art svg { width: 100%; height: 100%; display: block; }
-  .plant-info h2 { margin: 0 0 3px; }
-  .plant-sub { margin: 0; font-size: 13px; color: var(--muted); }
+  .gz-card { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; margin-bottom: 18px; box-shadow: var(--shadow-sm); overflow: hidden; }
+  .gz-bird { width: 116px; flex: none; }
+  .gz-bird svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .gz-bubble { position: relative; flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; background: var(--surface-2); border: 1px solid var(--line-strong); border-radius: 14px; padding: 9px 11px; }
+  .gz-bubble::before { content: ""; position: absolute; left: -7px; top: 50%; width: 12px; height: 12px; background: var(--surface-2); border-left: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong); transform: translateY(-50%) rotate(45deg); }
+  .gz-vase { flex: none; }
+  .gz-vase svg { width: 46px; height: 60px; display: block; }
+  .gz-info { flex: 1; min-width: 0; }
+  .gz-namerow { display: flex; align-items: center; gap: 8px; }
+  .gz-name { font-size: 18px; font-weight: 800; color: var(--ink); }
+  .gz-bang { flex: none; width: 22px; height: 22px; border-radius: 50%; border: 0; background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: 13px; line-height: 1; cursor: pointer; }
+  .gz-bang[aria-expanded="true"] { background: var(--accent); color: #fff; }
+  .gz-detail { margin-top: 4px; font-size: 12px; color: var(--muted); line-height: 1.35; }
+  .gz-detail[hidden] { display: none; }
+  .gz-facet, .gz-paper, .gz-fdetail { transform-box: fill-box; transform-origin: center; }
+  .gz-card.play .gz-facet { opacity: 0; animation: gzFIn .9s cubic-bezier(.2,.75,.3,1.02) forwards; }
+  .gz-card.play .gz-paper { opacity: 0; animation: gzSwarm 1.15s ease-in forwards; }
+  .gz-card.play .gz-fdetail { opacity: 0; animation: gzDIn .55s ease 1.95s forwards; }
+  .gz-card.play .gz-bubble { opacity: 0; transform-origin: left center; animation: gzPop .45s cubic-bezier(.2,.9,.3,1.35) 2.2s forwards; }
+  @keyframes gzFIn { 0% { opacity: 0; transform: translate(var(--fx),var(--fy)) rotate(var(--fr)) scale(.45); } 55% { opacity: 1; } 100% { opacity: 1; transform: none; } }
+  @keyframes gzDIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes gzSwarm { 0% { opacity: 0; transform: translate(var(--tx),var(--ty)) rotate(var(--r)) scale(1); } 20% { opacity: .95; } 100% { opacity: 0; transform: translate(0,0) rotate(0) scale(.12); } }
+  @keyframes gzPop { 0% { opacity: 0; transform: scale(.4); } 100% { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .gz-card.play .gz-facet, .gz-card.play .gz-fdetail, .gz-card.play .gz-bubble { opacity: 1 !important; transform: none !important; animation: none !important; }
+    .gz-paper { display: none; }
+  }
   .panel-sub { margin: 2px 4px 16px; font-size: 13px; color: var(--muted); }
   .hint-btn { margin-left: auto; border: 1px solid var(--line-strong); background: var(--accent-soft); color: var(--accent-ink); padding: 7px 13px; border-radius: 999px; font-size: 12.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; transition: background .14s, color .14s, border-color .14s; }
   .hint-btn:hover { border-color: var(--accent); }
@@ -614,16 +629,48 @@
 
   <section class="section panel" data-panel="panoramica">
     <h2 class="greeting" id="greeting" hidden></h2>
-    <div class="coach" id="coach" hidden>
-      <div class="coach-ava"><svg viewBox="0 0 120 120" aria-hidden="true"><polygon points="21,76 75,64 51,86" fill="#F4CE5E"/><polygon points="51,34 79,62 45,62" fill="#E9BC46"/><polygon points="79,62 99,55 83,70" fill="#F2994A"/><line x1="51" y1="34" x2="51" y2="62" stroke="#0A5A4A" stroke-width="1.4" opacity=".4"/><line x1="45" y1="62" x2="75" y2="64" stroke="#0A5A4A" stroke-width="1.4" opacity=".4"/><text x="54" y="58" font-family="Georgia,serif" font-size="11" font-weight="bold" fill="#0A5A4A">€</text><circle cx="81" cy="61" r="2.2" fill="#0A3B31"/></svg></div>
-      <p class="coach-msg" id="coachMsg"></p>
-      <button class="coach-x" id="coachX" type="button" aria-label="Chiudi">×</button>
-    </div>
-    <div class="card plant-card">
-      <div class="plant-art" id="plantArt"></div>
-      <div class="plant-info">
-        <h2 id="plantStageName">Seme</h2>
-        <p class="plant-sub" id="plantHint">—</p>
+    <div class="gz-card play" id="gzScene">
+      <div class="gz-bird">
+        <svg viewBox="80 132 352 248" aria-hidden="true">
+          <g fill="#F4CE5E">
+            <rect class="gz-paper" x="245" y="245" width="26" height="26" rx="4" style="--tx:-210px;--ty:70px;--r:130deg;animation-delay:0s"/>
+            <rect class="gz-paper" x="245" y="245" width="22" height="22" rx="4" style="--tx:200px;--ty:90px;--r:-150deg;animation-delay:.07s"/>
+            <rect class="gz-paper" x="245" y="245" width="24" height="24" rx="4" style="--tx:-160px;--ty:-120px;--r:100deg;animation-delay:.04s"/>
+            <rect class="gz-paper" x="245" y="245" width="20" height="20" rx="4" style="--tx:175px;--ty:-120px;--r:-120deg;animation-delay:.12s"/>
+            <rect class="gz-paper" x="245" y="245" width="18" height="18" rx="4" style="--tx:-50px;--ty:190px;--r:200deg;animation-delay:.2s"/>
+            <rect class="gz-paper" x="245" y="245" width="22" height="22" rx="4" style="--tx:60px;--ty:-200px;--r:-90deg;animation-delay:.11s"/>
+            <rect class="gz-paper" x="245" y="245" width="16" height="16" rx="4" style="--tx:120px;--ty:150px;--r:170deg;animation-delay:.25s"/>
+          </g>
+          <g fill="#E9BC46">
+            <rect class="gz-paper" x="248" y="248" width="20" height="20" rx="4" style="--tx:-215px;--ty:-30px;--r:160deg;animation-delay:.15s"/>
+            <rect class="gz-paper" x="248" y="248" width="16" height="16" rx="4" style="--tx:210px;--ty:10px;--r:-170deg;animation-delay:.23s"/>
+            <rect class="gz-paper" x="248" y="248" width="18" height="18" rx="4" style="--tx:25px;--ty:205px;--r:120deg;animation-delay:.28s"/>
+            <rect class="gz-paper" x="248" y="248" width="16" height="16" rx="4" style="--tx:-95px;--ty:-190px;--r:-140deg;animation-delay:.33s"/>
+            <rect class="gz-paper" x="248" y="248" width="14" height="14" rx="3" style="--tx:-140px;--ty:120px;--r:210deg;animation-delay:.37s"/>
+            <rect class="gz-paper" x="248" y="248" width="15" height="15" rx="3" style="--tx:150px;--ty:-60px;--r:-110deg;animation-delay:.4s"/>
+          </g>
+          <g fill="#F2C94C">
+            <rect class="gz-paper" x="250" y="250" width="14" height="14" rx="3" style="--tx:90px;--ty:190px;--r:-200deg;animation-delay:.26s"/>
+            <rect class="gz-paper" x="250" y="250" width="12" height="12" rx="3" style="--tx:-190px;--ty:180px;--r:150deg;animation-delay:.42s"/>
+            <rect class="gz-paper" x="250" y="250" width="13" height="13" rx="3" style="--tx:200px;--ty:-160px;--r:-130deg;animation-delay:.46s"/>
+          </g>
+          <polygon class="gz-facet" points="100,320 316,272 220,360" fill="#F4CE5E" style="--fx:-90px;--fy:80px;--fr:55deg;animation-delay:.9s"/>
+          <polygon class="gz-facet" points="220,152 332,264 196,264" fill="#E9BC46" style="--fx:-40px;--fy:-95px;--fr:-70deg;animation-delay:1.05s"/>
+          <polygon class="gz-facet" points="332,264 412,236 348,296" fill="#F2994A" style="--fx:110px;--fy:-25px;--fr:85deg;animation-delay:1.2s"/>
+          <g class="gz-fdetail">
+            <line x1="220" y1="152" x2="220" y2="264" stroke="#0A5A4A" stroke-width="5" opacity="0.4"/>
+            <line x1="196" y1="264" x2="316" y2="272" stroke="#0A5A4A" stroke-width="5" opacity="0.4"/>
+            <text x="249" y="245" text-anchor="middle" font-family="Georgia,serif" font-size="58" font-weight="bold" fill="#0A5A4A">€</text>
+            <circle cx="340" cy="264" r="9" fill="#0A3B31"/>
+          </g>
+        </svg>
+      </div>
+      <div class="gz-bubble">
+        <div class="gz-vase" id="gzVase"></div>
+        <div class="gz-info">
+          <div class="gz-namerow"><span class="gz-name" id="gzName">Seme</span><button class="gz-bang" id="gzBang" type="button" aria-expanded="false" aria-label="Dettagli">!</button></div>
+          <div class="gz-detail" id="gzDetail" hidden></div>
+        </div>
       </div>
     </div>
     <p class="panel-sub">La fotografia del mese: dove va lo stipendio e i tuoi conti.</p>
@@ -1427,7 +1474,7 @@
       '<span class="hs-v good">' + eur(totale) + '</span></div>';
   }
 
-  // ---------- gamification: pianta + coach ----------
+  // ---------- gamification: uccellino + pianta ----------
   var PLANT_TH = [0, 1, 2, 4, 8, 12];
   var PLANT_NAME = ["Seme", "Germoglio", "Pianticella", "Cespuglio", "Alberello", "Albero d'oro"];
   var POT = '<path d="M42 112 L78 112 L73 140 L47 140 Z" fill="#C6805A"/><rect x="38" y="105" width="44" height="10" rx="3" fill="#D68C63"/><ellipse cx="60" cy="108" rx="19" ry="4" fill="#5C4433"/>';
@@ -1439,16 +1486,7 @@
     POT + '<rect x="56" y="82" width="8" height="26" rx="3" fill="#8A5A3C"/><circle cx="60" cy="72" r="22" fill="#2FA98C"/><circle cx="49" cy="78" r="13" fill="#3FB89B"/><circle cx="71" cy="76" r="13" fill="#3FB89B"/>',
     POT + '<rect x="55" y="80" width="10" height="28" rx="3" fill="#8A5A3C"/><circle cx="60" cy="66" r="26" fill="#2FA98C"/><circle cx="46" cy="74" r="15" fill="#3FB89B"/><circle cx="74" cy="72" r="15" fill="#3FB89B"/><circle cx="49" cy="70" r="8" fill="#F4CE5E" stroke="#C79A2E" stroke-width="1.5"/><text x="49" y="74" text-anchor="middle" font-family="Georgia,serif" font-size="10" font-weight="bold" fill="#8A6A1E">€</text><circle cx="72" cy="64" r="8" fill="#F4CE5E" stroke="#C79A2E" stroke-width="1.5"/><text x="72" y="68" text-anchor="middle" font-family="Georgia,serif" font-size="10" font-weight="bold" fill="#8A6A1E">€</text><circle cx="60" cy="54" r="8" fill="#F4CE5E" stroke="#C79A2E" stroke-width="1.5"/><text x="60" y="58" text-anchor="middle" font-family="Georgia,serif" font-size="10" font-weight="bold" fill="#8A6A1E">€</text>'
   ];
-  var TIPS = [
-    "Ogni euro messo da parte è un passo verso il tuo obiettivo.",
-    "Il gruzzolo cresce goccia a goccia: continua così!",
-    "Risparmiare oggi è regalarti serenità domani.",
-    "Anche un piccolo extra questo mese fa crescere la pianta.",
-    "La costanza batte la fortuna: un mese alla volta.",
-    "Occhio alle spese piccole: sommate, fanno un bel gruzzolo."
-  ];
-  var coachDismissed = false;
-  var coachGrew = null;
+  function keptTxt(k) { return k === 1 ? "1 mese mantenuto" : k + " mesi mantenuti"; }
   function monthsKept() {
     var ob = planRisparmio();
     return state.history.filter(hasReal).reduce(function (a, h) { return a + ((Number(h.saved) - ob >= -0.5) ? 1 : 0); }, 0);
@@ -1456,23 +1494,14 @@
   function plantStage(k) { var s = 0; for (var i = 0; i < PLANT_TH.length; i++) { if (k >= PLANT_TH[i]) s = i; } return s; }
   function renderMotivation() {
     var k = monthsKept(), st = plantStage(k);
-    var art = document.getElementById("plantArt");
-    if (art) art.innerHTML = '<svg viewBox="0 0 120 150" width="100%" height="100%" aria-hidden="true">' + PLANT_SVG[st] + '</svg>';
-    var nm = document.getElementById("plantStageName"); if (nm) nm.textContent = PLANT_NAME[st];
-    var hint = document.getElementById("plantHint");
-    if (hint) {
-      if (st >= PLANT_TH.length - 1) hint.textContent = k + " mesi mantenuti · pianta al massimo splendore 🌳";
-      else hint.textContent = k + " mesi mantenuti · ancora " + (PLANT_TH[st + 1] - k) + " per crescere";
+    var vase = document.getElementById("gzVase");
+    if (vase) vase.innerHTML = '<svg viewBox="0 0 120 150" width="100%" height="100%" aria-hidden="true">' + PLANT_SVG[st] + '</svg>';
+    var nm = document.getElementById("gzName"); if (nm) nm.textContent = PLANT_NAME[st];
+    var det = document.getElementById("gzDetail");
+    if (det) {
+      if (st >= PLANT_TH.length - 1) det.textContent = keptTxt(k) + " · pianta al massimo splendore 🌳";
+      else { var rem = PLANT_TH[st + 1] - k; det.textContent = keptTxt(k) + " · ancora " + (rem === 1 ? "1 mese" : rem + " mesi") + " per crescere"; }
     }
-    var coach = document.getElementById("coach"), msgEl = document.getElementById("coachMsg");
-    if (!coach || !msgEl) return;
-    if (coachDismissed) { coach.hidden = true; return; }
-    if (state.plantSeen == null) { state.plantSeen = st; persist(); }
-    else if (st > state.plantSeen) { coachGrew = st; state.plantSeen = st; persist(); }
-    var msg = (coachGrew != null)
-      ? "Evviva! La tua pianta è cresciuta: ora è " + PLANT_NAME[coachGrew].toLowerCase() + " 🎉"
-      : TIPS[(new Date().getDate()) % TIPS.length];
-    msgEl.textContent = msg; coach.hidden = false;
   }
 
   // ---------- backup: export / import ----------
@@ -1721,9 +1750,13 @@
   recompute();
   renderHistory();
   updateBackupUI();
-  (function wireCoach() {
-    var cx = document.getElementById("coachX");
-    if (cx) cx.addEventListener("click", function () { coachDismissed = true; var c = document.getElementById("coach"); if (c) c.hidden = true; });
+  (function wireBang() {
+    var b = document.getElementById("gzBang"), d = document.getElementById("gzDetail");
+    if (b && d) b.addEventListener("click", function () {
+      var o = d.hasAttribute("hidden");
+      if (o) d.removeAttribute("hidden"); else d.setAttribute("hidden", "");
+      b.setAttribute("aria-expanded", o ? "true" : "false");
+    });
   })();
 
   (function initTab() {
