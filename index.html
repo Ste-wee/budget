@@ -706,11 +706,13 @@
   function daysSinceBackup() { return state.lastBackup ? Math.floor((Date.now() - state.lastBackup) / 86400000) : null; }
   function updateBackupUI() {
     var days = daysSinceBackup();
-    var label = state.lastBackup == null ? "mai" : (days <= 0 ? "oggi" : (days === 1 ? "ieri" : days + " giorni fa"));
-    var lb = document.getElementById("lastBackup"); if (lb) lb.textContent = "Ultimo backup: " + label;
-    var chip = document.getElementById("dirtyChip"); if (chip) chip.hidden = !state.dirty;
-    var mb = document.getElementById("menuBtn"); if (mb) mb.classList.toggle("has-dot", !!state.dirty);
-    var show = !!state.dirty && (state.lastBackup == null || days >= 7) && !reminderDismissed;
+    var synced = (typeof gIsOn === "function") && gIsOn();
+    var label = synced ? "Sincronizzato su Drive ✓"
+      : "Ultimo backup: " + (state.lastBackup == null ? "mai" : (days <= 0 ? "oggi" : (days === 1 ? "ieri" : days + " giorni fa")));
+    var lb = document.getElementById("lastBackup"); if (lb) lb.textContent = label;
+    var chip = document.getElementById("dirtyChip"); if (chip) chip.hidden = synced || !state.dirty;
+    var mb = document.getElementById("menuBtn"); if (mb) mb.classList.toggle("has-dot", !synced && !!state.dirty);
+    var show = !synced && !!state.dirty && (state.lastBackup == null || days >= 7) && !reminderDismissed;
     var bar = document.getElementById("backupBar"); if (bar) bar.hidden = !show;
   }
   function nid(p) { state.seq = (state.seq || 100) + 1; return p + state.seq; }
@@ -1475,6 +1477,7 @@
     var sep = document.getElementById("gdriveSep"), st = document.getElementById("gdriveStatus"), d = document.getElementById("gdriveDisconnect");
     if (sep) sep.hidden = !on; if (st) st.hidden = !on; if (d) d.hidden = !on;
     var big = document.getElementById("gLoginBig"); if (big) big.hidden = on;
+    if (typeof updateBackupUI === "function") updateBackupUI();
   }
   function gInit() {
     if (gClient) return true;
