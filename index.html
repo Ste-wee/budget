@@ -352,10 +352,6 @@
   .env-seg { display: flex; height: 8px; border-radius: 99px; overflow: hidden; background: var(--surface); margin-top: 11px; }
   .env-seg > span { flex: none; width: 0; height: 100%; transition: width .55s cubic-bezier(.2,.7,.2,1); }
   .env-seg > span + span { box-shadow: -1.5px 0 0 var(--surface); }
-  .env-legend { display: flex; flex-wrap: wrap; gap: 5px 12px; margin-top: 10px; font-size: 12px; color: var(--muted); }
-  .leg-chip { display: inline-flex; align-items: center; gap: 5px; }
-  .leg-chip .ld { width: 9px; height: 9px; border-radius: 50%; flex: none; }
-  .leg-chip .lp { color: var(--ink); font-weight: 700; }
   .env-rows { margin-top: 10px; display: flex; flex-direction: column; }
   .env-row { display: grid; gap: 8px; align-items: center; padding: 3px 0; border-top: 0.5px solid color-mix(in srgb, var(--ink) 8%, transparent); }
   .env-rows .env-row:first-child { border-top: 0; }
@@ -787,7 +783,6 @@
   if (state.dirty === undefined) state.dirty = false;
   if (state.lastBackup === undefined) state.lastBackup = null;
   if (state.lastSync === undefined) state.lastSync = null;
-  if (state.plantSeen === undefined) state.plantSeen = null;
 
   function load() {
     try {
@@ -1692,7 +1687,6 @@
     if (state.dirty === undefined) state.dirty = false;
     if (state.lastBackup === undefined) state.lastBackup = null;
     if (state.lastSync === undefined) state.lastSync = null;
-    if (state.plantSeen === undefined) state.plantSeen = null;
     persist(); renderGroups(); renderAccounts(); recompute(); renderHistory(); updateBackupUI(); gRenderTime();
   }
   function gConnect() {
@@ -1708,13 +1702,6 @@
         var ls = document.getElementById("loginScreen"), le = document.getElementById("loginErr");
         if (le && ls && !ls.hidden) le.hidden = false;
       });
-  }
-  function gSyncNow() {
-    gStatus("sincronizzo…");
-    gToken(true).then(gFind).then(gDownload).then(function (remote) {
-      if (gValid(remote)) { gApply(remote); gStatus("sincronizzato ✓"); }
-      else { return gUpload().then(function () { gMarkSynced(); gStatus("sincronizzato ✓"); }); }
-    }).catch(function () { gStatus("errore, riprova"); });
   }
   function gDisconnect() {
     var t = gTok; gSetOn(false); gTok = null; gExp = 0; gFileId = null; gProfileName = null;
