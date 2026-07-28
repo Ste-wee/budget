@@ -238,10 +238,10 @@
   .gz-bang { position: absolute; top: 8px; right: 12px; width: 20px; height: 20px; border-radius: 50%; border: 0; background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: 12px; line-height: 1; cursor: pointer; padding: 0; }
   .gz-bang[aria-expanded="true"] { background: var(--accent); color: #fff; }
   .gz-facet, .gz-paper, .gz-fdetail { transform-box: fill-box; transform-origin: center; }
-  .gz-card.play .gz-facet { opacity: 0; animation: gzFIn .9s cubic-bezier(.2,.75,.3,1.02) forwards; }
-  .gz-card.play .gz-paper { opacity: 0; animation: gzSwarm 1.15s ease-in forwards; }
-  .gz-card.play .gz-fdetail { opacity: 0; animation: gzDIn .55s ease 1.95s forwards; }
-  .gz-card.play .gz-bubble { opacity: 0; transform-origin: left center; animation: gzPop .45s cubic-bezier(.2,.9,.3,1.35) 2.2s forwards; }
+  .gz-card.play .gz-facet { opacity: 0; animation: gzFIn .72s cubic-bezier(.2,.75,.3,1.02) forwards; }
+  .gz-card.play .gz-paper { opacity: 0; animation: gzSwarm .9s ease-in forwards; }
+  .gz-card.play .gz-fdetail { opacity: 0; animation: gzDIn .4s ease 1.5s forwards; }
+  .gz-card.play .gz-bubble { opacity: 0; transform-origin: left center; animation: gzPop .38s cubic-bezier(.2,.9,.3,1.35) 1.6s forwards; }
   @keyframes gzFIn { 0% { opacity: 0; transform: translate(var(--fx),var(--fy)) rotate(var(--fr)) scale(.45); } 55% { opacity: 1; } 100% { opacity: 1; transform: none; } }
   @keyframes gzDIn { from { opacity: 0; } to { opacity: 1; } }
   @keyframes gzSwarm { 0% { opacity: 0; transform: translate(var(--tx),var(--ty)) rotate(var(--r)) scale(1); } 20% { opacity: .95; } 100% { opacity: 0; transform: translate(0,0) rotate(0) scale(.12); } }
@@ -662,9 +662,9 @@
             <rect class="gz-paper" x="250" y="250" width="12" height="12" rx="3" style="--tx:-190px;--ty:180px;--r:150deg;animation-delay:.42s"/>
             <rect class="gz-paper" x="250" y="250" width="13" height="13" rx="3" style="--tx:200px;--ty:-160px;--r:-130deg;animation-delay:.46s"/>
           </g>
-          <polygon class="gz-facet" points="100,320 316,272 220,360" fill="#F4CE5E" style="--fx:-90px;--fy:80px;--fr:55deg;animation-delay:.9s"/>
-          <polygon class="gz-facet" points="220,152 332,264 196,264" fill="#E9BC46" style="--fx:-40px;--fy:-95px;--fr:-70deg;animation-delay:1.05s"/>
-          <polygon class="gz-facet" points="332,264 412,236 348,296" fill="#F2994A" style="--fx:110px;--fy:-25px;--fr:85deg;animation-delay:1.2s"/>
+          <polygon class="gz-facet" points="100,320 316,272 220,360" fill="#F4CE5E" style="--fx:-90px;--fy:80px;--fr:55deg;animation-delay:.6s"/>
+          <polygon class="gz-facet" points="220,152 332,264 196,264" fill="#E9BC46" style="--fx:-40px;--fy:-95px;--fr:-70deg;animation-delay:.72s"/>
+          <polygon class="gz-facet" points="332,264 412,236 348,296" fill="#F2994A" style="--fx:110px;--fy:-25px;--fr:85deg;animation-delay:.84s"/>
           <g class="gz-fdetail">
             <line x1="220" y1="152" x2="220" y2="264" stroke="#0A5A4A" stroke-width="5" opacity="0.4"/>
             <line x1="196" y1="264" x2="316" y2="272" stroke="#0A5A4A" stroke-width="5" opacity="0.4"/>
