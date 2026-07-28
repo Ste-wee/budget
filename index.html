@@ -181,11 +181,23 @@
   .menu-item:hover { background: var(--surface-2); }
   .menu-item svg { width: 16px; height: 16px; color: var(--muted); flex: none; }
   .menu-sep { height: 1px; background: var(--line); margin: 5px 8px; }
-  .g-login { display: inline-flex; align-items: center; gap: 10px; margin: 0 0 16px; background: var(--surface); color: var(--ink); border: 1px solid var(--line-strong); border-radius: 10px; padding: 10px 16px; font-size: 14px; font-weight: 600; box-shadow: var(--shadow-sm); cursor: pointer; transition: background .14s, border-color .14s; }
-  .g-login:hover { background: var(--surface-2); border-color: var(--faint); }
-  .g-login[hidden] { display: none; }
   .menu-item[hidden], .menu-status[hidden], .menu-sep[hidden] { display: none; }
-  .g-login svg { width: 18px; height: 18px; flex: none; }
+  .login-screen { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; background: radial-gradient(900px 520px at 50% -8%, var(--accent-soft), transparent 68%), var(--ground); animation: loginIn .3s ease; }
+  .login-screen[hidden] { display: none; }
+  .login-card { width: 100%; max-width: 380px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 36px 28px 26px; text-align: center; }
+  .login-logo { width: 66px; height: 66px; margin: 0 auto 18px; border-radius: 20px; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 800; box-shadow: 0 12px 28px -12px var(--accent); }
+  .login-title { margin: 0 0 9px; font-size: 24px; font-weight: 800; color: var(--ink); letter-spacing: -.02em; }
+  .login-sub { margin: 0 0 26px; font-size: 14px; line-height: 1.5; color: var(--muted); }
+  .login-google { display: inline-flex; align-items: center; justify-content: center; gap: 11px; width: 100%; background: var(--surface); color: var(--ink); border: 1px solid var(--line-strong); border-radius: 12px; padding: 13px 18px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: var(--shadow-sm); transition: background .14s, border-color .14s, transform .06s; }
+  .login-google:hover { background: var(--surface-2); border-color: var(--faint); }
+  .login-google:active { transform: scale(.985); }
+  .login-google svg { width: 20px; height: 20px; flex: none; }
+  .login-skip { margin: 14px auto 0; background: none; border: 0; color: var(--muted); font-size: 13px; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; padding: 6px; }
+  .login-skip:hover { color: var(--ink); }
+  .login-err { margin: 16px 0 0; font-size: 13px; font-weight: 600; line-height: 1.4; color: var(--warn); }
+  .login-err[hidden] { display: none; }
+  .login-note { margin: 22px 0 0; font-size: 12px; line-height: 1.45; color: var(--faint); }
+  @keyframes loginIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
   .menu-status.sub { padding-top: 0; padding-bottom: 6px; }
   .dirty-chip { margin-left: auto; background: var(--warn-soft); color: var(--warn); font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 99px; }
   .dirty-chip[hidden] { display: none; }
@@ -530,7 +542,7 @@
       </button>
       <div class="menu-pop" id="menuPop" hidden>
         <div class="menu-status"><span class="mdot"></span><span id="savedDot">Salvato in locale</span></div>
-        <div class="menu-status sub"><span id="lastBackup">Ultimo backup: mai</span><span class="dirty-chip" id="dirtyChip" hidden>da esportare</span></div>
+        <div class="menu-status sub" id="backupInfoRow"><span id="lastBackup">Ultimo backup: mai</span><span class="dirty-chip" id="dirtyChip" hidden>da esportare</span></div>
         <button class="menu-item" id="importBtn" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
           Importa backup
@@ -540,8 +552,13 @@
           Esporta backup
         </button>
         <input type="file" id="importFile" class="file-hidden" accept="application/json,.json">
-        <div class="menu-sep" id="gdriveSep" hidden></div>
+        <div class="menu-sep" id="gdriveSep"></div>
+        <button class="menu-item" id="gdriveConnect" type="button" hidden>
+          <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+          Accedi con Google
+        </button>
         <div class="menu-status sub" id="gdriveStatus" hidden>Google Drive: collegato ✓</div>
+        <div class="menu-status sub" id="gdriveTime" hidden>Ultimo salvataggio: —</div>
         <button class="menu-item" id="gdriveDisconnect" type="button" hidden>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
           Scollega Google Drive
@@ -560,6 +577,21 @@
   </nav>
 </header>
 
+<div class="login-screen" id="loginScreen" hidden>
+  <div class="login-card">
+    <div class="login-logo">€</div>
+    <h1 class="login-title">Il mio Budget</h1>
+    <p class="login-sub">Tieni fede al tuo obiettivo di risparmio.<br>Accedi per salvare e sincronizzare i dati sul tuo Google Drive, su tutti i dispositivi.</p>
+    <button class="login-google" id="loginGoogle" type="button">
+      <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Accedi con Google
+    </button>
+    <p class="login-err" id="loginErr" hidden>Accesso non riuscito. Riprova, oppure continua senza accedere.</p>
+    <button class="login-skip" id="loginSkip" type="button">Per ora continua senza accedere</button>
+    <p class="login-note">🔒 I dati restano nel tuo account Google. Nessun altro può vederli.</p>
+  </div>
+</div>
+
 <div class="wrap">
   <div class="backup-bar" id="backupBar" hidden>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4-3 7-7 8-4-1-7-4-7-8V6z"/><path d="M9 12l2 2 4-4"/></svg>
@@ -570,10 +602,6 @@
 
   <section class="section panel" data-panel="panoramica">
     <p class="panel-sub">La fotografia del mese: dove va lo stipendio e i tuoi conti.</p>
-    <button class="g-login" id="gLoginBig" type="button">
-      <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-      Accedi con Google
-    </button>
     <section class="summary" id="summary"></section>
 
     <div class="card">
@@ -677,6 +705,7 @@
   if (!state.history) state.history = [];
   if (state.dirty === undefined) state.dirty = false;
   if (state.lastBackup === undefined) state.lastBackup = null;
+  if (state.lastSync === undefined) state.lastSync = null;
 
   function load() {
     try {
@@ -707,9 +736,9 @@
   function updateBackupUI() {
     var days = daysSinceBackup();
     var synced = (typeof gIsOn === "function") && gIsOn();
-    var label = synced ? "Sincronizzato su Drive ✓"
-      : "Ultimo backup: " + (state.lastBackup == null ? "mai" : (days <= 0 ? "oggi" : (days === 1 ? "ieri" : days + " giorni fa")));
-    var lb = document.getElementById("lastBackup"); if (lb) lb.textContent = label;
+    var row = document.getElementById("backupInfoRow"); if (row) row.hidden = synced;
+    var lb = document.getElementById("lastBackup");
+    if (lb) lb.textContent = "Ultimo backup: " + (state.lastBackup == null ? "mai" : (days <= 0 ? "oggi" : (days === 1 ? "ieri" : days + " giorni fa")));
     var chip = document.getElementById("dirtyChip"); if (chip) chip.hidden = synced || !state.dirty;
     var mb = document.getElementById("menuBtn"); if (mb) mb.classList.toggle("has-dot", !synced && !!state.dirty);
     var show = !synced && !!state.dirty && (state.lastBackup == null || days >= 7) && !reminderDismissed;
@@ -1468,15 +1497,27 @@
   // ---------- Google Drive sync ----------
   var GID = "1067931384958-k03fd8rrqese9m92m4pevmmsnm5slh88.apps.googleusercontent.com";
   var GKEY = "budget-gdrive";
+  var SKIPKEY = "budget-loginskip";
   var gTok = null, gExp = 0, gFileId = null, gTimer = null, gClient = null;
   function gIsOn() { try { return localStorage.getItem(GKEY) === "on"; } catch (e) { return false; } }
   function gSetOn(v) { try { v ? localStorage.setItem(GKEY, "on") : localStorage.removeItem(GKEY); } catch (e) {} }
   function gStatus(t) { var el = document.getElementById("gdriveStatus"); if (el) el.textContent = "Google Drive: " + t; }
+  function fmtDT(ts) {
+    if (!ts) return "—";
+    try { return new Date(ts).toLocaleString("it-IT", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }); }
+    catch (e) { return "—"; }
+  }
+  function gRenderTime() { var el = document.getElementById("gdriveTime"); if (el) el.textContent = "Ultimo salvataggio: " + fmtDT(state.lastSync); }
+  function gMarkSynced() { state.lastSync = Date.now(); persist(); gRenderTime(); }
+  function showLogin() { var el = document.getElementById("loginScreen"); if (el) el.hidden = false; }
+  function hideLogin() { var el = document.getElementById("loginScreen"); if (el) el.hidden = true; }
   function gUpdateUI() {
     var on = gIsOn();
-    var sep = document.getElementById("gdriveSep"), st = document.getElementById("gdriveStatus"), d = document.getElementById("gdriveDisconnect");
-    if (sep) sep.hidden = !on; if (st) st.hidden = !on; if (d) d.hidden = !on;
-    var big = document.getElementById("gLoginBig"); if (big) big.hidden = on;
+    var cn = document.getElementById("gdriveConnect"), st = document.getElementById("gdriveStatus"),
+        tm = document.getElementById("gdriveTime"), d = document.getElementById("gdriveDisconnect");
+    if (cn) cn.hidden = on; if (st) st.hidden = !on; if (tm) tm.hidden = !on; if (d) d.hidden = !on;
+    gRenderTime();
+    if (on) hideLogin();
     if (typeof updateBackupUI === "function") updateBackupUI();
   }
   function gInit() {
@@ -1518,7 +1559,8 @@
     if (!state.history) state.history = [];
     if (state.dirty === undefined) state.dirty = false;
     if (state.lastBackup === undefined) state.lastBackup = null;
-    persist(); renderGroups(); renderAccounts(); recompute(); renderHistory(); updateBackupUI();
+    if (state.lastSync === undefined) state.lastSync = null;
+    persist(); renderGroups(); renderAccounts(); recompute(); renderHistory(); updateBackupUI(); gRenderTime();
   }
   function gConnect() {
     gStatus("connessione…");
@@ -1526,19 +1568,25 @@
       if (gValid(remote)) {
         if (window.confirm("Su Google Drive ci sono già dei dati.\n\nOK = usa i dati di Drive su questo dispositivo\nAnnulla = tieni i dati attuali e sovrascrivi Drive")) { gApply(remote); return; }
       }
-      return gUpload();
+      return gUpload().then(gMarkSynced);
     }).then(function () { gSetOn(true); gUpdateUI(); gStatus("collegato ✓"); })
-      .catch(function () { gStatus("collegamento non riuscito"); });
+      .catch(function () {
+        gStatus("collegamento non riuscito");
+        var ls = document.getElementById("loginScreen"), le = document.getElementById("loginErr");
+        if (le && ls && !ls.hidden) le.hidden = false;
+      });
   }
   function gSyncNow() {
     gStatus("sincronizzo…");
     gToken(true).then(gFind).then(gDownload).then(function (remote) {
       if (gValid(remote)) { gApply(remote); gStatus("sincronizzato ✓"); }
-      else { return gUpload().then(function () { gStatus("sincronizzato ✓"); }); }
+      else { return gUpload().then(function () { gMarkSynced(); gStatus("sincronizzato ✓"); }); }
     }).catch(function () { gStatus("errore, riprova"); });
   }
   function gDisconnect() {
     var t = gTok; gSetOn(false); gTok = null; gExp = 0; gFileId = null; gUpdateUI(); gStatus("non collegato");
+    try { sessionStorage.removeItem(SKIPKEY); } catch (e) {}
+    showLogin();
     try { if (t && window.google && google.accounts && google.accounts.oauth2) google.accounts.oauth2.revoke(t); } catch (e) {}
   }
   function gPush() {
@@ -1546,17 +1594,23 @@
     clearTimeout(gTimer);
     gTimer = setTimeout(function () {
       gToken(false).then(function () { return gFileId ? gUpload() : gFind().then(gUpload); })
-        .then(function () { gStatus("sincronizzato ✓"); }).catch(function () { gStatus("da sincronizzare"); });
+        .then(function () { gMarkSynced(); gStatus("sincronizzato ✓"); }).catch(function () { gStatus("da sincronizzare"); });
     }, 1500);
   }
   (function gBoot() {
     var d = document.getElementById("gdriveDisconnect"); if (d) d.addEventListener("click", gDisconnect);
-    var big = document.getElementById("gLoginBig"); if (big) big.addEventListener("click", gConnect);
+    var cn = document.getElementById("gdriveConnect"); if (cn) cn.addEventListener("click", gConnect);
+    var lg = document.getElementById("loginGoogle"); if (lg) lg.addEventListener("click", function () { var le = document.getElementById("loginErr"); if (le) le.hidden = true; gConnect(); });
+    var sk = document.getElementById("loginSkip"); if (sk) sk.addEventListener("click", function () { try { sessionStorage.setItem(SKIPKEY, "1"); } catch (e) {} hideLogin(); });
     gUpdateUI();
+    var skipped = false; try { skipped = sessionStorage.getItem(SKIPKEY) === "1"; } catch (e) {}
     if (gIsOn()) {
+      hideLogin();
       gStatus("collegato");
       var pull = function () { gToken(false).then(gFind).then(gDownload).then(function (remote) { if (gValid(remote)) gApply(remote); gStatus("sincronizzato ✓"); }).catch(function () { gStatus("collegato · tocca Sincronizza"); }); };
       if (gInit()) pull(); else setTimeout(function () { if (gInit()) pull(); else gStatus("collegato · tocca Sincronizza"); }, 2000);
+    } else if (!skipped) {
+      showLogin();
     }
   })();
 
