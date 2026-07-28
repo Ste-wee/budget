@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Il mio Budget</title>
+<title>Gruzzolo</title>
 <meta name="description" content="Il mio budget mensile e l'impegno al risparmio">
 <meta name="theme-color" content="#0E7C66">
 <link rel="manifest" href="manifest.webmanifest">
@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="icon-512.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Budget">
+<meta name="apple-mobile-web-app-title" content="Gruzzolo">
 <script src="https://accounts.google.com/gsi/client" async></script>
 <style>
   :root {
@@ -185,7 +185,8 @@
   .login-screen { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; background: radial-gradient(900px 520px at 50% -8%, var(--accent-soft), transparent 68%), var(--ground); animation: loginIn .3s ease; }
   .login-screen[hidden] { display: none; }
   .login-card { width: 100%; max-width: 380px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 36px 28px 26px; text-align: center; }
-  .login-logo { width: 66px; height: 66px; margin: 0 auto 18px; border-radius: 20px; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 800; box-shadow: 0 12px 28px -12px var(--accent); }
+  .login-logo { width: 66px; height: 66px; margin: 0 auto 18px; border-radius: 20px; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 12px 28px -12px var(--accent); }
+  .mark svg, .login-logo svg { width: 76%; height: 76%; display: block; }
   .login-title { margin: 0 0 9px; font-size: 24px; font-weight: 800; color: var(--ink); letter-spacing: -.02em; }
   .login-sub { margin: 0 0 26px; font-size: 14px; line-height: 1.5; color: var(--muted); }
   .login-google { display: inline-flex; align-items: center; justify-content: center; gap: 11px; width: 100%; background: var(--surface); color: var(--ink); border: 1px solid var(--line-strong); border-radius: 12px; padding: 13px 18px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: var(--shadow-sm); transition: background .14s, border-color .14s, transform .06s; }
@@ -528,9 +529,9 @@
 <header class="top">
   <div class="top-inner">
     <div class="brand">
-      <div class="mark">€</div>
+      <div class="mark"><svg viewBox="0 0 120 120" aria-hidden="true"><polygon points="21,76 75,64 51,86" fill="#F4CE5E"/><polygon points="51,34 79,62 45,62" fill="#E9BC46"/><polygon points="79,62 99,55 83,70" fill="#F2994A"/><line x1="51" y1="34" x2="51" y2="62" stroke="#0A5A4A" stroke-width="1.4" opacity=".4"/><line x1="45" y1="62" x2="75" y2="64" stroke="#0A5A4A" stroke-width="1.4" opacity=".4"/><text x="54" y="58" font-family="Georgia,serif" font-size="11" font-weight="bold" fill="#0A5A4A">€</text><circle cx="81" cy="61" r="2.2" fill="#0A3B31"/></svg></div>
       <div class="brand-txt">
-        <h1>Il mio Budget</h1>
+        <h1>Gruzzolo</h1>
         <p id="monthLabel">—</p>
       </div>
     </div>
@@ -581,8 +582,8 @@
 
 <div class="login-screen" id="loginScreen" hidden>
   <div class="login-card">
-    <div class="login-logo">€</div>
-    <h1 class="login-title">Il mio Budget</h1>
+    <div class="login-logo"><svg viewBox="0 0 120 120" aria-hidden="true"><polygon points="21,76 75,64 51,86" fill="#F4CE5E"/><polygon points="51,34 79,62 45,62" fill="#E9BC46"/><polygon points="79,62 99,55 83,70" fill="#F2994A"/><line x1="51" y1="34" x2="51" y2="62" stroke="#0A5A4A" stroke-width="1.4" opacity=".4"/><line x1="45" y1="62" x2="75" y2="64" stroke="#0A5A4A" stroke-width="1.4" opacity=".4"/><text x="54" y="58" font-family="Georgia,serif" font-size="11" font-weight="bold" fill="#0A5A4A">€</text><circle cx="81" cy="61" r="2.2" fill="#0A3B31"/></svg></div>
+    <h1 class="login-title">Gruzzolo</h1>
     <p class="login-sub">Tieni fede al tuo obiettivo di risparmio.<br>Accedi per salvare e sincronizzare i dati sul tuo Google Drive, su tutti i dispositivi.</p>
     <button class="login-google" id="loginGoogle" type="button">
       <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>

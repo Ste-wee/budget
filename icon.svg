@@ -1,4 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Budget">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Gruzzolo">
   <rect width="512" height="512" rx="112" fill="#0E7C66"/>
-  <text x="256" y="272" text-anchor="middle" dominant-baseline="central" font-family="system-ui, 'Segoe UI', Arial, sans-serif" font-size="290" font-weight="800" fill="#ffffff">€</text>
+  <polygon points="100,320 316,272 220,360" fill="#F4CE5E"/>
+  <polygon points="220,152 332,264 196,264" fill="#E9BC46"/>
+  <polygon points="332,264 412,236 348,296" fill="#F2994A"/>
+  <line x1="220" y1="152" x2="220" y2="264" stroke="#0A5A4A" stroke-width="5" opacity="0.4"/>
+  <line x1="196" y1="264" x2="316" y2="272" stroke="#0A5A4A" stroke-width="5" opacity="0.4"/>
+  <text x="249" y="245" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="58" font-weight="bold" fill="#0A5A4A">€</text>
+  <circle cx="340" cy="264" r="9" fill="#0A3B31"/>
 </svg>
