@@ -223,6 +223,18 @@
   .panel.active { display: block; animation: fade .35s ease both; }
   .greeting { margin: 0 4px 2px; font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); }
   .greeting[hidden] { display: none; }
+  .coach { display: flex; align-items: center; gap: 12px; background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent); border-radius: 14px; padding: 11px 12px; margin-bottom: 14px; }
+  .coach[hidden] { display: none; }
+  .coach-ava { width: 40px; height: 40px; flex: none; border-radius: 12px; background: var(--accent); display: flex; align-items: center; justify-content: center; }
+  .coach-ava svg { width: 76%; height: 76%; display: block; }
+  .coach-msg { flex: 1; margin: 0; font-size: 13px; font-weight: 600; color: var(--accent-ink); line-height: 1.4; }
+  .coach-x { flex: none; background: none; border: 0; color: var(--accent-ink); cursor: pointer; font-size: 20px; line-height: 1; padding: 2px 6px; opacity: .55; }
+  .coach-x:hover { opacity: 1; }
+  .plant-card { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+  .plant-art { width: 82px; height: 100px; flex: none; }
+  .plant-art svg { width: 100%; height: 100%; display: block; }
+  .plant-info h2 { margin: 0 0 3px; }
+  .plant-sub { margin: 0; font-size: 13px; color: var(--muted); }
   .panel-sub { margin: 2px 4px 16px; font-size: 13px; color: var(--muted); }
   .hint-btn { margin-left: auto; border: 1px solid var(--line-strong); background: var(--accent-soft); color: var(--accent-ink); padding: 7px 13px; border-radius: 999px; font-size: 12.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; transition: background .14s, color .14s, border-color .14s; }
   .hint-btn:hover { border-color: var(--accent); }
@@ -602,6 +614,18 @@
 
   <section class="section panel" data-panel="panoramica">
     <h2 class="greeting" id="greeting" hidden></h2>
+    <div class="coach" id="coach" hidden>
+      <div class="coach-ava"><svg viewBox="0 0 120 120" aria-hidden="true"><polygon points="21,76 75,64 51,86" fill="#F4CE5E"/><polygon points="51,34 79,62 45,62" fill="#E9BC46"/><polygon points="79,62 99,55 83,70" fill="#F2994A"/><line x1="51" y1="34" x2="51" y2="62" stroke="#0A5A4A" stroke-width="1.4" opacity=".4"/><line x1="45" y1="62" x2="75" y2="64" stroke="#0A5A4A" stroke-width="1.4" opacity=".4"/><text x="54" y="58" font-family="Georgia,serif" font-size="11" font-weight="bold" fill="#0A5A4A">€</text><circle cx="81" cy="61" r="2.2" fill="#0A3B31"/></svg></div>
+      <p class="coach-msg" id="coachMsg"></p>
+      <button class="coach-x" id="coachX" type="button" aria-label="Chiudi">×</button>
+    </div>
+    <div class="card plant-card">
+      <div class="plant-art" id="plantArt"></div>
+      <div class="plant-info">
+        <h2 id="plantStageName">Seme</h2>
+        <p class="plant-sub" id="plantHint">—</p>
+      </div>
+    </div>
     <p class="panel-sub">La fotografia del mese: dove va lo stipendio e i tuoi conti.</p>
     <section class="summary" id="summary"></section>
 
@@ -707,6 +731,7 @@
   if (state.dirty === undefined) state.dirty = false;
   if (state.lastBackup === undefined) state.lastBackup = null;
   if (state.lastSync === undefined) state.lastSync = null;
+  if (state.plantSeen === undefined) state.plantSeen = null;
 
   function load() {
     try {
@@ -1252,6 +1277,7 @@
       note.textContent = "Somma di tutte le uscite (spese, risparmi, svago, cuscinetto) assegnate a ciascun conto.";
       host.appendChild(note);
     }
+    renderMotivation();
   }
 
   function escapeHtml(s) {
@@ -1372,6 +1398,7 @@
       flag.innerHTML = ok ? '<span class="fi">✓</span><span class="ft">Mantenuta</span>' : '<span class="fi">✗</span><span class="ft">Non mantenuta</span>';
     });
     updateHistorySummary(obiettivo);
+    renderMotivation();
   }
 
   function updateHistorySummary(obiettivo) {
@@ -1398,6 +1425,52 @@
       '<span class="hs-v ' + cls + '">obiettivo ' + (saldo > 0 ? "+" : "") + eur(saldo) + '</span></div>' +
       '<div class="hs-row"><span class="hs-k">Totale messo via</span>' +
       '<span class="hs-v good">' + eur(totale) + '</span></div>';
+  }
+
+  // ---------- gamification: pianta + coach ----------
+  var PLANT_TH = [0, 1, 2, 4, 8, 12];
+  var PLANT_NAME = ["Seme", "Germoglio", "Pianticella", "Cespuglio", "Alberello", "Albero d'oro"];
+  var POT = '<path d="M42 112 L78 112 L73 140 L47 140 Z" fill="#C6805A"/><rect x="38" y="105" width="44" height="10" rx="3" fill="#D68C63"/><ellipse cx="60" cy="108" rx="19" ry="4" fill="#5C4433"/>';
+  var PLANT_SVG = [
+    POT + '<ellipse cx="60" cy="104" rx="4.5" ry="5.5" fill="#E9BC46"/>',
+    POT + '<line x1="60" y1="106" x2="60" y2="90" stroke="#2FA98C" stroke-width="3" stroke-linecap="round"/><ellipse cx="53" cy="92" rx="8" ry="4" fill="#3FB89B" transform="rotate(-28 53 92)"/><ellipse cx="67" cy="90" rx="8" ry="4" fill="#3FB89B" transform="rotate(28 67 90)"/>',
+    POT + '<line x1="60" y1="106" x2="60" y2="76" stroke="#2FA98C" stroke-width="3" stroke-linecap="round"/><ellipse cx="51" cy="96" rx="9" ry="4.2" fill="#3FB89B" transform="rotate(-28 51 96)"/><ellipse cx="69" cy="92" rx="9" ry="4.2" fill="#3FB89B" transform="rotate(28 69 92)"/><ellipse cx="52" cy="82" rx="8" ry="4" fill="#46C4A6" transform="rotate(-25 52 82)"/><ellipse cx="68" cy="80" rx="8" ry="4" fill="#46C4A6" transform="rotate(25 68 80)"/><circle cx="60" cy="74" r="4" fill="#46C4A6"/>',
+    POT + '<line x1="60" y1="106" x2="60" y2="92" stroke="#2FA98C" stroke-width="3" stroke-linecap="round"/><circle cx="60" cy="80" r="18" fill="#2FA98C"/><circle cx="48" cy="86" r="12" fill="#3FB89B"/><circle cx="72" cy="86" r="12" fill="#3FB89B"/><circle cx="60" cy="73" r="12" fill="#46C4A6"/>',
+    POT + '<rect x="56" y="82" width="8" height="26" rx="3" fill="#8A5A3C"/><circle cx="60" cy="72" r="22" fill="#2FA98C"/><circle cx="49" cy="78" r="13" fill="#3FB89B"/><circle cx="71" cy="76" r="13" fill="#3FB89B"/>',
+    POT + '<rect x="55" y="80" width="10" height="28" rx="3" fill="#8A5A3C"/><circle cx="60" cy="66" r="26" fill="#2FA98C"/><circle cx="46" cy="74" r="15" fill="#3FB89B"/><circle cx="74" cy="72" r="15" fill="#3FB89B"/><circle cx="49" cy="70" r="8" fill="#F4CE5E" stroke="#C79A2E" stroke-width="1.5"/><text x="49" y="74" text-anchor="middle" font-family="Georgia,serif" font-size="10" font-weight="bold" fill="#8A6A1E">€</text><circle cx="72" cy="64" r="8" fill="#F4CE5E" stroke="#C79A2E" stroke-width="1.5"/><text x="72" y="68" text-anchor="middle" font-family="Georgia,serif" font-size="10" font-weight="bold" fill="#8A6A1E">€</text><circle cx="60" cy="54" r="8" fill="#F4CE5E" stroke="#C79A2E" stroke-width="1.5"/><text x="60" y="58" text-anchor="middle" font-family="Georgia,serif" font-size="10" font-weight="bold" fill="#8A6A1E">€</text>'
+  ];
+  var TIPS = [
+    "Ogni euro messo da parte è un passo verso il tuo obiettivo.",
+    "Il gruzzolo cresce goccia a goccia: continua così!",
+    "Risparmiare oggi è regalarti serenità domani.",
+    "Anche un piccolo extra questo mese fa crescere la pianta.",
+    "La costanza batte la fortuna: un mese alla volta.",
+    "Occhio alle spese piccole: sommate, fanno un bel gruzzolo."
+  ];
+  var coachDismissed = false;
+  function monthsKept() {
+    var ob = planRisparmio();
+    return state.history.filter(hasReal).reduce(function (a, h) { return a + ((Number(h.saved) - ob >= -0.5) ? 1 : 0); }, 0);
+  }
+  function plantStage(k) { var s = 0; for (var i = 0; i < PLANT_TH.length; i++) { if (k >= PLANT_TH[i]) s = i; } return s; }
+  function renderMotivation() {
+    var k = monthsKept(), st = plantStage(k);
+    var art = document.getElementById("plantArt");
+    if (art) art.innerHTML = '<svg viewBox="0 0 120 150" width="100%" height="100%" aria-hidden="true">' + PLANT_SVG[st] + '</svg>';
+    var nm = document.getElementById("plantStageName"); if (nm) nm.textContent = PLANT_NAME[st];
+    var hint = document.getElementById("plantHint");
+    if (hint) {
+      if (st >= PLANT_TH.length - 1) hint.textContent = k + " mesi mantenuti · pianta al massimo splendore 🌳";
+      else hint.textContent = k + " mesi mantenuti · ancora " + (PLANT_TH[st + 1] - k) + " per crescere";
+    }
+    var coach = document.getElementById("coach"), msgEl = document.getElementById("coachMsg");
+    if (!coach || !msgEl) return;
+    if (coachDismissed) { coach.hidden = true; return; }
+    if (state.plantSeen == null) { state.plantSeen = st; persist(); }
+    var msg;
+    if (st > state.plantSeen) { msg = "Evviva! La tua pianta è cresciuta: ora è " + PLANT_NAME[st].toLowerCase() + " 🎉"; state.plantSeen = st; persist(); }
+    else { msg = TIPS[(new Date().getDate()) % TIPS.length]; }
+    msgEl.textContent = msg; coach.hidden = false;
   }
 
   // ---------- backup: export / import ----------
@@ -1577,6 +1650,7 @@
     if (state.dirty === undefined) state.dirty = false;
     if (state.lastBackup === undefined) state.lastBackup = null;
     if (state.lastSync === undefined) state.lastSync = null;
+    if (state.plantSeen === undefined) state.plantSeen = null;
     persist(); renderGroups(); renderAccounts(); recompute(); renderHistory(); updateBackupUI(); gRenderTime();
   }
   function gConnect() {
@@ -1645,6 +1719,10 @@
   recompute();
   renderHistory();
   updateBackupUI();
+  (function wireCoach() {
+    var cx = document.getElementById("coachX");
+    if (cx) cx.addEventListener("click", function () { coachDismissed = true; var c = document.getElementById("coach"); if (c) c.hidden = true; });
+  })();
 
   (function initTab() {
     var start = "panoramica";
