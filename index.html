@@ -1448,6 +1448,7 @@
     "Occhio alle spese piccole: sommate, fanno un bel gruzzolo."
   ];
   var coachDismissed = false;
+  var coachGrew = null;
   function monthsKept() {
     var ob = planRisparmio();
     return state.history.filter(hasReal).reduce(function (a, h) { return a + ((Number(h.saved) - ob >= -0.5) ? 1 : 0); }, 0);
@@ -1467,9 +1468,10 @@
     if (!coach || !msgEl) return;
     if (coachDismissed) { coach.hidden = true; return; }
     if (state.plantSeen == null) { state.plantSeen = st; persist(); }
-    var msg;
-    if (st > state.plantSeen) { msg = "Evviva! La tua pianta è cresciuta: ora è " + PLANT_NAME[st].toLowerCase() + " 🎉"; state.plantSeen = st; persist(); }
-    else { msg = TIPS[(new Date().getDate()) % TIPS.length]; }
+    else if (st > state.plantSeen) { coachGrew = st; state.plantSeen = st; persist(); }
+    var msg = (coachGrew != null)
+      ? "Evviva! La tua pianta è cresciuta: ora è " + PLANT_NAME[coachGrew].toLowerCase() + " 🎉"
+      : TIPS[(new Date().getDate()) % TIPS.length];
     msgEl.textContent = msg; coach.hidden = false;
   }
 
