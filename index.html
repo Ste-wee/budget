@@ -336,7 +336,14 @@
   .env-grid { display: grid; grid-template-columns: 1fr; gap: 14px; align-items: start; }
   @media (min-width: 760px) { .env-grid { grid-template-columns: 1fr 1fr; } }
   .env { border: 0.5px solid var(--line); border-left: 5px solid var(--env, var(--line-strong)); border-radius: 12px; background: var(--env-bg, var(--surface)); padding: 15px 17px; box-shadow: var(--shadow-sm); }
-  .env-head { display: flex; align-items: center; gap: 11px; }
+  .env-head { display: flex; align-items: center; gap: 11px; cursor: pointer; }
+  .env-caret { color: var(--faint); font-size: 12px; margin-left: 8px; flex: none; transition: transform .2s; }
+  .env.open .env-caret { transform: rotate(180deg); }
+  .env-body { display: none; }
+  .env.open .env-body { display: block; }
+  .nm-wrap { min-width: 0; }
+  .nm-wrap .epct { display: block; font-size: 10.5px; color: var(--muted); padding: 0 9px; margin-top: -1px; }
+  .nm-wrap .epct:empty { display: none; }
   .env-ico { color: var(--env); display: inline-flex; }
   .env-ico svg { width: 20px; height: 20px; }
   .env-name { font-weight: 700; font-size: 14.5px; }
@@ -879,6 +886,7 @@
     return g.color;
   }
 
+  var openBuste = new Set(["entrate"]);
   function renderGroups() {
     var host = document.getElementById("groups");
     host.innerHTML = "";
@@ -886,7 +894,7 @@
     grid.className = "env-grid";
     GROUPS.forEach(function (g) {
       var env = document.createElement("div");
-      env.className = "env";
+      env.className = "env" + (openBuste.has(g.id) ? " open" : "");
       env.dataset.gid = g.id;
       env.style.setProperty("--env", g.color);
       env.style.setProperty("--env-bg", "color-mix(in srgb, " + g.color + " 14%, var(--surface))");
@@ -896,7 +904,11 @@
       head.innerHTML =
         '<span class="env-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + (GICONS[g.id] || "") + '</svg></span>' +
         '<span class="env-name">' + g.label + '</span>' +
-        '<span class="env-tot num" data-gtot="' + g.id + '"></span>';
+        '<span class="env-tot num" data-gtot="' + g.id + '"></span>' +
+        '<span class="env-caret" aria-hidden="true">▾</span>';
+      head.addEventListener("click", function () {
+        if (env.classList.toggle("open")) openBuste.add(g.id); else openBuste.delete(g.id);
+      });
       env.appendChild(head);
 
       var items = state.items[g.id] || [];
@@ -911,20 +923,13 @@
       });
       env.appendChild(seg);
 
-      var leg = document.createElement("div");
-      leg.className = "env-legend";
-      items.forEach(function (it) {
-        var chip = document.createElement("span");
-        chip.className = "leg-chip"; chip.setAttribute("data-leg-id", it.id);
-        chip.innerHTML = '<span class="ld" style="background:' + voceColor(g, it) + '"></span><span class="ln"></span> <b class="lp"></b>';
-        leg.appendChild(chip);
-      });
-      env.appendChild(leg);
+      var body = document.createElement("div");
+      body.className = "env-body";
 
       var rows = document.createElement("div");
       rows.className = "env-rows";
       items.forEach(function (it) { rows.appendChild(makeRow(g, it)); });
-      env.appendChild(rows);
+      body.appendChild(rows);
       syncEmpty(rows, g);
 
       var add = document.createElement("button");
@@ -933,11 +938,14 @@
       add.addEventListener("click", function () {
         var it = { id: nid("i"), name: "", amount: 0, acct: g.acct ? (state.accounts[0] ? state.accounts[0].id : null) : null };
         state.items[g.id].push(it);
+        openBuste.add(g.id);
         save(); renderGroups(); recompute();
         var el = document.querySelector('.env-row[data-id="' + it.id + '"] input.nm');
         if (el) el.focus();
       });
-      env.appendChild(add);
+      body.appendChild(add);
+      env.appendChild(body);
+
       if (g.id === "entrate") host.appendChild(env);
       else grid.appendChild(env);
     });
@@ -962,11 +970,16 @@
     row.className = "env-row " + (g.acct ? "has-bank" : "no-bank");
     row.dataset.id = it.id;
 
+    var nmWrap = document.createElement("div");
+    nmWrap.className = "nm-wrap";
     var nm = document.createElement("input");
     nm.className = "nm"; nm.type = "text"; nm.value = it.name;
     nm.placeholder = g.kind === "in" ? "Fonte di entrata" : "Descrizione";
     nm.addEventListener("input", function () { it.name = nm.value; save(); });
-    row.appendChild(nm);
+    nmWrap.appendChild(nm);
+    var pct = document.createElement("span"); pct.className = "epct";
+    nmWrap.appendChild(pct);
+    row.appendChild(nmWrap);
 
     var amtCell = document.createElement("div");
     amtCell.className = "amt-cell";
@@ -1103,12 +1116,8 @@
         var col = voceColor(g, it);
         var s = document.querySelector('[data-seg-id="' + it.id + '"]');
         if (s) { s.style.width = pv.toFixed(2) + "%"; s.style.background = col; }
-        var chip = document.querySelector('.leg-chip[data-leg-id="' + it.id + '"]');
-        if (chip) {
-          var ld = chip.querySelector(".ld"); if (ld) ld.style.background = col;
-          chip.querySelector(".ln").textContent = it.name || (g.kind === "in" ? "Entrata" : "Voce");
-          chip.querySelector(".lp").textContent = Math.round(pv) + "%";
-        }
+        var pct = document.querySelector('.env-row[data-id="' + it.id + '"] .epct');
+        if (pct) pct.textContent = (g.kind !== "in" && Number(it.amount) > 0) ? Math.round(pv) + "% dello stipendio" : "";
       });
     });
 
