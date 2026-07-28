@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Gruzzolo</title>
-<meta name="description" content="Il mio budget mensile e l'impegno al risparmio">
+<meta name="description" content="Gruzzolo — il tuo budget mensile e l'impegno al risparmio">
 <meta name="theme-color" content="#0E7C66">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -542,7 +542,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
       <div class="menu-pop" id="menuPop" hidden>
-        <div class="menu-status"><span class="mdot"></span><span id="savedDot">Salvato in locale</span></div>
+        <div class="menu-status"><span class="mdot"></span><span id="savedDot">Salvato</span></div>
         <div class="menu-status sub" id="backupInfoRow"><span id="lastBackup">Ultimo backup: mai</span><span class="dirty-chip" id="dirtyChip" hidden>da esportare</span></div>
         <button class="menu-item" id="importBtn" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
@@ -728,7 +728,7 @@
     if (dot) {
       dot.textContent = "Salvataggio…";
       clearTimeout(saveTimer);
-      saveTimer = setTimeout(function () { dot.textContent = "Salvato in locale"; }, 500);
+      saveTimer = setTimeout(function () { dot.textContent = "Salvato"; }, 500);
     }
     updateBackupUI();
     gPush();
@@ -1623,8 +1623,8 @@
     if (gIsOn()) {
       hideLogin();
       gStatus("collegato");
-      var pull = function () { gToken(false).then(function (t) { gFetchProfile(); return t; }).then(gFind).then(gDownload).then(function (remote) { if (gValid(remote)) gApply(remote); gStatus("sincronizzato ✓"); }).catch(function () { gStatus("collegato · tocca Sincronizza"); }); };
-      if (gInit()) pull(); else setTimeout(function () { if (gInit()) pull(); else gStatus("collegato · tocca Sincronizza"); }, 2000);
+      var pull = function () { gToken(false).then(function (t) { gFetchProfile(); return t; }).then(gFind).then(gDownload).then(function (remote) { if (gValid(remote)) gApply(remote); gStatus("sincronizzato ✓"); }).catch(function () { gStatus("collegato"); }); };
+      if (gInit()) pull(); else setTimeout(function () { if (gInit()) pull(); else gStatus("collegato"); }, 2000);
     } else {
       showLogin();
     }
