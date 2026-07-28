@@ -221,12 +221,12 @@
   .tab-ico { display: none; }
   .panel { display: none; }
   .panel.active { display: block; animation: fade .35s ease both; }
-  .greeting { margin: 0 4px 2px; font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); }
+  .greeting { margin: 12px 4px 10px; font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); }
   .greeting[hidden] { display: none; }
-  .gz-card { position: relative; height: 196px; margin-bottom: 18px; overflow: hidden; }
-  .gz-bird { position: absolute; left: 0; bottom: 0; width: min(170px, 54%); }
+  .gz-card { position: relative; margin-bottom: 18px; overflow: hidden; }
+  .gz-bird { position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: min(160px, 50%); z-index: 1; }
   .gz-bird svg { width: 100%; height: auto; display: block; overflow: visible; }
-  .gz-bubble { position: absolute; right: 0; top: 4px; display: flex; flex-direction: column; align-items: center; gap: 4px; background: var(--surface-2); border: 1px solid var(--line-strong); border-radius: 26px; padding: 12px 16px 10px; max-width: 52%; }
+  .gz-bubble { position: relative; margin-left: auto; width: max-content; max-width: 52%; display: flex; flex-direction: column; align-items: center; gap: 4px; background: var(--surface-2); border: 1px solid var(--line-strong); border-radius: 26px; padding: 14px 18px 12px; }
   .gz-bubble::before { content: ""; position: absolute; left: -6px; bottom: 12px; width: 15px; height: 15px; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--line-strong); }
   .gz-bubble::after { content: ""; position: absolute; left: -16px; bottom: 4px; width: 8px; height: 8px; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--line-strong); }
   .gz-vase { flex: none; }
