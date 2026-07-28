@@ -222,6 +222,8 @@
   .tab-ico { display: none; }
   .panel { display: none; }
   .panel.active { display: block; animation: fade .35s ease both; }
+  .greeting { margin: 0 4px 2px; font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); }
+  .greeting[hidden] { display: none; }
   .panel-sub { margin: 2px 4px 16px; font-size: 13px; color: var(--muted); }
   .hint-btn { margin-left: auto; border: 1px solid var(--line-strong); background: var(--accent-soft); color: var(--accent-ink); padding: 7px 13px; border-radius: 999px; font-size: 12.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; transition: background .14s, color .14s, border-color .14s; }
   .hint-btn:hover { border-color: var(--accent); }
@@ -601,6 +603,7 @@
   </div>
 
   <section class="section panel" data-panel="panoramica">
+    <h2 class="greeting" id="greeting" hidden></h2>
     <p class="panel-sub">La fotografia del mese: dove va lo stipendio e i tuoi conti.</p>
     <section class="summary" id="summary"></section>
 
@@ -1498,7 +1501,9 @@
   var GID = "1067931384958-k03fd8rrqese9m92m4pevmmsnm5slh88.apps.googleusercontent.com";
   var GKEY = "budget-gdrive";
   var SKIPKEY = "budget-loginskip";
+  var NAMEKEY = "budget-name";
   var gTok = null, gExp = 0, gFileId = null, gTimer = null, gClient = null;
+  var gProfileName = null; try { gProfileName = localStorage.getItem(NAMEKEY) || null; } catch (e) {}
   function gIsOn() { try { return localStorage.getItem(GKEY) === "on"; } catch (e) { return false; } }
   function gSetOn(v) { try { v ? localStorage.setItem(GKEY, "on") : localStorage.removeItem(GKEY); } catch (e) {} }
   function gStatus(t) { var el = document.getElementById("gdriveStatus"); if (el) el.textContent = "Google Drive: " + t; }
@@ -1511,19 +1516,34 @@
   function gMarkSynced() { state.lastSync = Date.now(); persist(); gRenderTime(); }
   function showLogin() { var el = document.getElementById("loginScreen"); if (el) el.hidden = false; }
   function hideLogin() { var el = document.getElementById("loginScreen"); if (el) el.hidden = true; }
+  function renderGreeting() {
+    var el = document.getElementById("greeting");
+    if (!el) return;
+    if (gIsOn() && gProfileName) { el.textContent = "Ciao " + gProfileName + " 👋"; el.hidden = false; }
+    else { el.hidden = true; }
+  }
+  function gFetchProfile() {
+    return gFetch("https://www.googleapis.com/oauth2/v3/userinfo").then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (p) {
+        var n = p && (p.given_name || p.name);
+        if (n) { gProfileName = n; try { localStorage.setItem(NAMEKEY, n); } catch (e) {} renderGreeting(); }
+        return p;
+      }).catch(function () {});
+  }
   function gUpdateUI() {
     var on = gIsOn();
     var cn = document.getElementById("gdriveConnect"), st = document.getElementById("gdriveStatus"),
         tm = document.getElementById("gdriveTime"), d = document.getElementById("gdriveDisconnect");
     if (cn) cn.hidden = on; if (st) st.hidden = !on; if (tm) tm.hidden = !on; if (d) d.hidden = !on;
     gRenderTime();
+    renderGreeting();
     if (on) hideLogin();
     if (typeof updateBackupUI === "function") updateBackupUI();
   }
   function gInit() {
     if (gClient) return true;
     if (!(window.google && google.accounts && google.accounts.oauth2)) return false;
-    gClient = google.accounts.oauth2.initTokenClient({ client_id: GID, scope: "https://www.googleapis.com/auth/drive.appdata", callback: function () {} });
+    gClient = google.accounts.oauth2.initTokenClient({ client_id: GID, scope: "https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/userinfo.profile", callback: function () {} });
     return true;
   }
   function gToken(interactive) {
@@ -1569,7 +1589,7 @@
         if (window.confirm("Su Google Drive ci sono già dei dati.\n\nOK = usa i dati di Drive su questo dispositivo\nAnnulla = tieni i dati attuali e sovrascrivi Drive")) { gApply(remote); return; }
       }
       return gUpload().then(gMarkSynced);
-    }).then(function () { gSetOn(true); gUpdateUI(); gStatus("collegato ✓"); })
+    }).then(function () { gFetchProfile(); gSetOn(true); gUpdateUI(); gStatus("collegato ✓"); })
       .catch(function () {
         gStatus("collegamento non riuscito");
         var ls = document.getElementById("loginScreen"), le = document.getElementById("loginErr");
@@ -1584,7 +1604,9 @@
     }).catch(function () { gStatus("errore, riprova"); });
   }
   function gDisconnect() {
-    var t = gTok; gSetOn(false); gTok = null; gExp = 0; gFileId = null; gUpdateUI(); gStatus("non collegato");
+    var t = gTok; gSetOn(false); gTok = null; gExp = 0; gFileId = null; gProfileName = null;
+    try { localStorage.removeItem(NAMEKEY); } catch (e) {}
+    gUpdateUI(); gStatus("non collegato");
     try { sessionStorage.removeItem(SKIPKEY); } catch (e) {}
     showLogin();
     try { if (t && window.google && google.accounts && google.accounts.oauth2) google.accounts.oauth2.revoke(t); } catch (e) {}
@@ -1607,7 +1629,7 @@
     if (gIsOn()) {
       hideLogin();
       gStatus("collegato");
-      var pull = function () { gToken(false).then(gFind).then(gDownload).then(function (remote) { if (gValid(remote)) gApply(remote); gStatus("sincronizzato ✓"); }).catch(function () { gStatus("collegato · tocca Sincronizza"); }); };
+      var pull = function () { gToken(false).then(function (t) { gFetchProfile(); return t; }).then(gFind).then(gDownload).then(function (remote) { if (gValid(remote)) gApply(remote); gStatus("sincronizzato ✓"); }).catch(function () { gStatus("collegato · tocca Sincronizza"); }); };
       if (gInit()) pull(); else setTimeout(function () { if (gInit()) pull(); else gStatus("collegato · tocca Sincronizza"); }, 2000);
     } else if (!skipped) {
       showLogin();
