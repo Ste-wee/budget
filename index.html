@@ -237,7 +237,12 @@
   .gz-detail[hidden] { display: none; }
   .gz-bang { position: absolute; top: 8px; right: 12px; width: 20px; height: 20px; border-radius: 50%; border: 0; background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: 12px; line-height: 1; cursor: pointer; padding: 0; }
   .gz-bang[aria-expanded="true"] { background: var(--accent); color: #fff; }
+  .onboard { background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent); border-radius: 14px; padding: 14px 16px; margin-bottom: 16px; }
+  .onboard[hidden] { display: none; }
+  .ob-title { font-size: 15px; font-weight: 800; color: var(--accent-ink); margin-bottom: 8px; }
+  .ob-steps { margin: 0; padding-left: 20px; color: var(--ink); font-size: 13.5px; line-height: 1.6; }
   .gz-facet, .gz-paper, .gz-fdetail { transform-box: fill-box; transform-origin: center; }
+  .gz-paper { opacity: 0; }
   .gz-card.play .gz-facet { opacity: 0; animation: gzFIn .72s cubic-bezier(.2,.75,.3,1.02) forwards; }
   .gz-card.play .gz-paper { opacity: 0; animation: gzSwarm .9s ease-in forwards; }
   .gz-card.play .gz-fdetail { opacity: 0; animation: gzDIn .4s ease 1.5s forwards; }
@@ -626,14 +631,22 @@
 <div class="wrap">
   <div class="backup-bar" id="backupBar" hidden>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4-3 7-7 8-4-1-7-4-7-8V6z"/><path d="M9 12l2 2 4-4"/></svg>
-    <span>Proteggi i tuoi dati: fai un backup ogni tanto.</span>
+    <span id="backupBarMsg">Proteggi i tuoi dati: fai un backup ogni tanto.</span>
     <button class="bb-btn" id="backupBarExport" type="button">Esporta</button>
     <button class="bb-x" id="backupBarClose" type="button" aria-label="Chiudi">×</button>
   </div>
 
   <section class="section panel" data-panel="panoramica">
     <h2 class="greeting" id="greeting" hidden></h2>
-    <div class="gz-card play" id="gzScene">
+    <div class="onboard" id="onboard" hidden>
+      <div class="ob-title">Come iniziare 🌱</div>
+      <ol class="ob-steps">
+        <li>Vai su <b>Il mese</b> e scrivi lo stipendio nelle <b>Entrate</b>.</li>
+        <li>Aggiungi spese fisse, risparmi e svago nelle <b>buste</b>.</li>
+        <li>I <b>Risparmi</b> sono il tuo obiettivo da rispettare ogni mese.</li>
+      </ol>
+    </div>
+    <div class="gz-card" id="gzScene">
       <div class="gz-bird">
         <svg viewBox="80 132 352 248" aria-hidden="true">
           <g fill="#F4CE5E">
@@ -817,8 +830,13 @@
     var lb = document.getElementById("lastBackup");
     if (lb) lb.textContent = "Ultimo backup: " + (state.lastBackup == null ? "mai" : (days <= 0 ? "oggi" : (days === 1 ? "ieri" : days + " giorni fa")));
     var chip = document.getElementById("dirtyChip"); if (chip) chip.hidden = synced || !state.dirty;
-    var mb = document.getElementById("menuBtn"); if (mb) mb.classList.toggle("has-dot", !synced && !!state.dirty);
-    var show = !synced && !!state.dirty && (state.lastBackup == null || days >= 7) && !reminderDismissed;
+    var hasData = (typeof isEmpty === "function") ? !isEmpty() : true;
+    var show = synced
+      ? (hasData && (state.lastBackup == null || days >= 30) && !reminderDismissed)
+      : (!!state.dirty && (state.lastBackup == null || days >= 7) && !reminderDismissed);
+    var mb = document.getElementById("menuBtn"); if (mb) mb.classList.toggle("has-dot", show);
+    var msg = document.getElementById("backupBarMsg");
+    if (msg) msg.textContent = synced ? "Consiglio: ogni tanto esporta una copia di sicurezza." : "Proteggi i tuoi dati: fai un backup ogni tanto.";
     var bar = document.getElementById("backupBar"); if (bar) bar.hidden = !show;
   }
   function nid(p) { state.seq = (state.seq || 100) + 1; return p + state.seq; }
@@ -1331,6 +1349,7 @@
       host.appendChild(note);
     }
     renderMotivation();
+    renderOnboard();
   }
 
   function escapeHtml(s) {
@@ -1493,6 +1512,11 @@
     POT + '<rect x="55" y="80" width="10" height="28" rx="3" fill="#8A5A3C"/><circle cx="60" cy="66" r="26" fill="#2FA98C"/><circle cx="46" cy="74" r="15" fill="#3FB89B"/><circle cx="74" cy="72" r="15" fill="#3FB89B"/><circle cx="49" cy="70" r="8" fill="#F4CE5E" stroke="#C79A2E" stroke-width="1.5"/><text x="49" y="74" text-anchor="middle" font-family="Georgia,serif" font-size="10" font-weight="bold" fill="#8A6A1E">€</text><circle cx="72" cy="64" r="8" fill="#F4CE5E" stroke="#C79A2E" stroke-width="1.5"/><text x="72" y="68" text-anchor="middle" font-family="Georgia,serif" font-size="10" font-weight="bold" fill="#8A6A1E">€</text><circle cx="60" cy="54" r="8" fill="#F4CE5E" stroke="#C79A2E" stroke-width="1.5"/><text x="60" y="58" text-anchor="middle" font-family="Georgia,serif" font-size="10" font-weight="bold" fill="#8A6A1E">€</text>'
   ];
   function keptTxt(k) { return k === 1 ? "1 mese mantenuto" : k + " mesi mantenuti"; }
+  function isEmpty() {
+    for (var g in state.items) { var arr = state.items[g] || []; for (var i = 0; i < arr.length; i++) if (Number(arr[i].amount) > 0) return false; }
+    return true;
+  }
+  function renderOnboard() { var el = document.getElementById("onboard"); if (el) el.hidden = !isEmpty(); }
   function monthsKept() {
     var ob = planRisparmio();
     return state.history.filter(hasReal).reduce(function (a, h) { return a + ((Number(h.saved) - ob >= -0.5) ? 1 : 0); }, 0);
@@ -1755,6 +1779,13 @@
       if (o) d.removeAttribute("hidden"); else d.setAttribute("hidden", "");
       b.setAttribute("aria-expanded", o ? "true" : "false");
     });
+  })();
+
+  (function animOnce() {
+    var el = document.getElementById("gzScene"); if (!el) return;
+    var today; try { today = new Date().toISOString().slice(0, 10); } catch (e) { today = "x"; }
+    var last = null; try { last = localStorage.getItem("budget-anim-day"); } catch (e) {}
+    if (last !== today) { el.classList.add("play"); try { localStorage.setItem("budget-anim-day", today); } catch (e) {} }
   })();
 
   (function initTab() {
