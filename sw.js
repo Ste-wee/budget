@@ -1,4 +1,4 @@
-var CACHE = "budget-v28";
+var CACHE = "budget-v29";
 var ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg", "./icon-512.png", "./by.png"];
 
 self.addEventListener("install", function (e) {

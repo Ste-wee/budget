@@ -1558,11 +1558,13 @@
       spot.style.display = "none";
       pop.style.left = "50%"; pop.style.top = "50%"; pop.style.transform = "translate(-50%,-50%)";
     }
+    tutLock(true);
   }
   function tutShow(i) {
     tutI = i;
     var step = TUT[i];
     if (!step) { tutEnd(); return; }
+    tutLock(false);
     if (step.tab) setTab(step.tab);
     setTimeout(function () {
       var el = document.querySelector(step.sel);
@@ -1572,12 +1574,20 @@
   }
   function tutEnd() {
     var tut = document.getElementById("tut"); if (tut) tut.hidden = true;
+    tutLock(false);
     try { localStorage.setItem("budget-tut-seen", "1"); } catch (e) {}
   }
   function tutStart() { tutShow(0); }
   function tutReposition() {
     var tut = document.getElementById("tut");
     if (tut && !tut.hidden && tutCurStep) tutPlace(tutCurEl, tutCurStep);
+  }
+  function tutBlock(e) { e.preventDefault(); }
+  function tutLock(on) {
+    document.documentElement.style.overflow = on ? "hidden" : "";
+    document.body.style.overflow = on ? "hidden" : "";
+    if (on) { document.addEventListener("touchmove", tutBlock, { passive: false }); document.addEventListener("wheel", tutBlock, { passive: false }); }
+    else { document.removeEventListener("touchmove", tutBlock); document.removeEventListener("wheel", tutBlock); }
   }
   function maybeTut() {
     var seen = false; try { seen = localStorage.getItem("budget-tut-seen") === "1"; } catch (e) {}
