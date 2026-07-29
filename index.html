@@ -1566,8 +1566,8 @@
     if (step.tab) setTab(step.tab);
     setTimeout(function () {
       var el = document.querySelector(step.sel);
-      if (el && el.scrollIntoView) el.scrollIntoView({ block: "center", behavior: reduceMotion ? "auto" : "smooth" });
-      setTimeout(function () { tutPlace(el, step); }, reduceMotion ? 30 : 320);
+      if (el && el.scrollIntoView) el.scrollIntoView({ block: "center", behavior: "auto" });
+      setTimeout(function () { tutPlace(el, step); }, 70);
     }, 40);
   }
   function tutEnd() {
