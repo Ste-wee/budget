@@ -239,7 +239,7 @@
   .gz-bang[aria-expanded="true"] { background: var(--accent); color: #fff; }
   .tut { position: fixed; inset: 0; z-index: 300; }
   .tut[hidden] { display: none; }
-  .tut-spot { position: fixed; display: none; border-radius: 12px; box-shadow: 0 0 0 9999px rgba(13,21,18,.55); border: 2px solid #fff; transition: left .25s, top .25s, width .25s, height .25s; pointer-events: none; }
+  .tut-spot { position: fixed; display: none; border-radius: 12px; box-shadow: 0 0 0 9999px rgba(13,21,18,.55); border: 2px solid #fff; pointer-events: none; }
   .tut-pop { position: fixed; z-index: 301; width: 260px; max-width: calc(100vw - 24px); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 14px 16px; }
   .tut-title { font-size: 15px; font-weight: 800; color: var(--ink); margin-bottom: 5px; }
   .tut-text { font-size: 13px; color: var(--muted); line-height: 1.45; }
@@ -1536,10 +1536,11 @@
     { tab: "mese", sel: '.env[data-gid="fisse"]', title: "2. Le tue spese", text: "Aggiungi spese fisse, svago e cuscinetto nelle buste. Tocca l'intestazione per aprire una busta." },
     { tab: "mese", sel: '.env[data-gid="risparmi"]', title: "3. Il tuo obiettivo", text: "I Risparmi sono l'impegno da rispettare ogni mese: la pianta cresce quando lo mantieni." }
   ];
-  var tutI = 0;
+  var tutI = 0, tutCurEl = null, tutCurStep = null, tutRaf = 0;
   function tutPlace(el, step) {
     var tut = document.getElementById("tut"), spot = document.getElementById("tutSpot"), pop = document.getElementById("tutPop");
     if (!tut) return;
+    tutCurEl = el; tutCurStep = step;
     document.getElementById("tutTitle").textContent = step.title;
     document.getElementById("tutText").textContent = step.text;
     document.getElementById("tutNext").textContent = (tutI >= TUT.length - 1) ? "Fine" : "Avanti";
@@ -1574,6 +1575,14 @@
     try { localStorage.setItem("budget-tut-seen", "1"); } catch (e) {}
   }
   function tutStart() { tutShow(0); }
+  function tutReposition() {
+    if (tutRaf) return;
+    tutRaf = requestAnimationFrame(function () {
+      tutRaf = 0;
+      var tut = document.getElementById("tut");
+      if (tut && !tut.hidden && tutCurStep) tutPlace(tutCurEl, tutCurStep);
+    });
+  }
   function maybeTut() {
     var seen = false; try { seen = localStorage.getItem("budget-tut-seen") === "1"; } catch (e) {}
     if (gIsOn() && isEmpty() && !seen) setTimeout(tutStart, 500);
@@ -1849,6 +1858,8 @@
       var mb = document.getElementById("menuBtn"); if (mb) mb.setAttribute("aria-expanded", "false");
       tutStart();
     });
+    window.addEventListener("scroll", tutReposition, true);
+    window.addEventListener("resize", tutReposition);
   })();
 
   (function animOnce() {
