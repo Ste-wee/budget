@@ -1576,12 +1576,8 @@
   }
   function tutStart() { tutShow(0); }
   function tutReposition() {
-    if (tutRaf) return;
-    tutRaf = requestAnimationFrame(function () {
-      tutRaf = 0;
-      var tut = document.getElementById("tut");
-      if (tut && !tut.hidden && tutCurStep) tutPlace(tutCurEl, tutCurStep);
-    });
+    var tut = document.getElementById("tut");
+    if (tut && !tut.hidden && tutCurStep) tutPlace(tutCurEl, tutCurStep);
   }
   function maybeTut() {
     var seen = false; try { seen = localStorage.getItem("budget-tut-seen") === "1"; } catch (e) {}
