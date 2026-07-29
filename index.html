@@ -237,10 +237,15 @@
   .gz-detail[hidden] { display: none; }
   .gz-bang { position: absolute; top: 8px; right: 12px; width: 20px; height: 20px; border-radius: 50%; border: 0; background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: 12px; line-height: 1; cursor: pointer; padding: 0; }
   .gz-bang[aria-expanded="true"] { background: var(--accent); color: #fff; }
-  .onboard { background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent); border-radius: 14px; padding: 14px 16px; margin-bottom: 16px; }
-  .onboard[hidden] { display: none; }
-  .ob-title { font-size: 15px; font-weight: 800; color: var(--accent-ink); margin-bottom: 8px; }
-  .ob-steps { margin: 0; padding-left: 20px; color: var(--ink); font-size: 13.5px; line-height: 1.6; }
+  .tut { position: fixed; inset: 0; z-index: 300; }
+  .tut[hidden] { display: none; }
+  .tut-spot { position: fixed; display: none; border-radius: 12px; box-shadow: 0 0 0 9999px rgba(13,21,18,.55); border: 2px solid #fff; transition: left .25s, top .25s, width .25s, height .25s; pointer-events: none; }
+  .tut-pop { position: fixed; z-index: 301; width: 260px; max-width: calc(100vw - 24px); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 14px 16px; }
+  .tut-title { font-size: 15px; font-weight: 800; color: var(--ink); margin-bottom: 5px; }
+  .tut-text { font-size: 13px; color: var(--muted); line-height: 1.45; }
+  .tut-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+  .tut-skip { background: none; border: 0; color: var(--faint); font-size: 12px; cursor: pointer; padding: 4px; }
+  .tut-next { background: var(--accent); color: #fff; border: 0; border-radius: 9px; padding: 8px 16px; font-weight: 700; font-size: 13px; cursor: pointer; }
   .gz-facet, .gz-paper, .gz-fdetail { transform-box: fill-box; transform-origin: center; }
   .gz-paper { opacity: 0; }
   .gz-card.play .gz-facet { opacity: 0; animation: gzFIn .72s cubic-bezier(.2,.75,.3,1.02) forwards; }
@@ -582,6 +587,10 @@
       <div class="menu-pop" id="menuPop" hidden>
         <div class="menu-status"><span class="mdot"></span><span id="savedDot">Salvato</span></div>
         <div class="menu-status sub" id="backupInfoRow"><span id="lastBackup">Ultimo backup: mai</span><span class="dirty-chip" id="dirtyChip" hidden>da esportare</span></div>
+        <button class="menu-item" id="tutMenu" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 0 1 4.5 1.5c0 1.5-2 2-2 3"/><path d="M12 17h.01"/></svg>
+          Come iniziare
+        </button>
         <button class="menu-item" id="importBtn" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
           Importa backup
@@ -640,14 +649,6 @@
 
   <section class="section panel" data-panel="panoramica">
     <h2 class="greeting" id="greeting" hidden></h2>
-    <div class="onboard" id="onboard" hidden>
-      <div class="ob-title">Come iniziare 🌱</div>
-      <ol class="ob-steps">
-        <li>Vai su <b>Il mese</b> e scrivi lo stipendio nelle <b>Entrate</b>.</li>
-        <li>Aggiungi spese fisse, risparmi e svago nelle <b>buste</b>.</li>
-        <li>I <b>Risparmi</b> sono il tuo obiettivo da rispettare ogni mese.</li>
-      </ol>
-    </div>
     <div class="gz-card" id="gzScene">
       <div class="gz-bird">
         <svg viewBox="80 132 352 248" aria-hidden="true">
@@ -742,6 +743,18 @@
   <footer class="foot">
     I tuoi dati sono salvati sul tuo Google Drive e sincronizzati in automatico. Con <b>Esporta backup</b> (menu ☰) puoi tenerne anche una copia su questo dispositivo. <span class="byline">By <img src="by.png" alt="" class="by-img"></span>
   </footer>
+</div>
+
+<div class="tut" id="tut" hidden>
+  <div class="tut-spot" id="tutSpot"></div>
+  <div class="tut-pop" id="tutPop">
+    <div class="tut-title" id="tutTitle"></div>
+    <div class="tut-text" id="tutText"></div>
+    <div class="tut-actions">
+      <button class="tut-skip" id="tutSkip" type="button">Salta</button>
+      <button class="tut-next" id="tutNext" type="button">Avanti</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast-host" id="toast"></div>
@@ -1351,7 +1364,6 @@
       host.appendChild(note);
     }
     renderMotivation();
-    renderOnboard();
   }
 
   function escapeHtml(s) {
@@ -1518,7 +1530,54 @@
     for (var g in state.items) { var arr = state.items[g] || []; for (var i = 0; i < arr.length; i++) if (Number(arr[i].amount) > 0) return false; }
     return true;
   }
-  function renderOnboard() { var el = document.getElementById("onboard"); if (el) el.hidden = !isEmpty(); }
+  // ---------- tutorial guidato ----------
+  var TUT = [
+    { tab: "mese", sel: '.env[data-gid="entrate"] input.amt', title: "1. Il tuo stipendio", text: "Scrivi qui quanto guadagni al mese, nelle Entrate." },
+    { tab: "mese", sel: '.env[data-gid="fisse"]', title: "2. Le tue spese", text: "Aggiungi spese fisse, svago e cuscinetto nelle buste. Tocca l'intestazione per aprire una busta." },
+    { tab: "mese", sel: '.env[data-gid="risparmi"]', title: "3. Il tuo obiettivo", text: "I Risparmi sono l'impegno da rispettare ogni mese: la pianta cresce quando lo mantieni." }
+  ];
+  var tutI = 0;
+  function tutPlace(el, step) {
+    var tut = document.getElementById("tut"), spot = document.getElementById("tutSpot"), pop = document.getElementById("tutPop");
+    if (!tut) return;
+    document.getElementById("tutTitle").textContent = step.title;
+    document.getElementById("tutText").textContent = step.text;
+    document.getElementById("tutNext").textContent = (tutI >= TUT.length - 1) ? "Fine" : "Avanti";
+    tut.hidden = false;
+    var vw = window.innerWidth, vh = window.innerHeight, ph = pop.offsetHeight || 150;
+    if (el) {
+      var r = el.getBoundingClientRect(), pad = 6;
+      spot.style.display = "block";
+      spot.style.left = (r.left - pad) + "px"; spot.style.top = (r.top - pad) + "px";
+      spot.style.width = (r.width + pad * 2) + "px"; spot.style.height = (r.height + pad * 2) + "px";
+      pop.style.transform = "";
+      pop.style.top = (r.bottom + ph + 20 < vh ? r.bottom + 12 : Math.max(12, r.top - ph - 12)) + "px";
+      pop.style.left = Math.min(Math.max(12, r.left), vw - pop.offsetWidth - 12) + "px";
+    } else {
+      spot.style.display = "none";
+      pop.style.left = "50%"; pop.style.top = "50%"; pop.style.transform = "translate(-50%,-50%)";
+    }
+  }
+  function tutShow(i) {
+    tutI = i;
+    var step = TUT[i];
+    if (!step) { tutEnd(); return; }
+    if (step.tab) setTab(step.tab);
+    setTimeout(function () {
+      var el = document.querySelector(step.sel);
+      if (el && el.scrollIntoView) el.scrollIntoView({ block: "center", behavior: reduceMotion ? "auto" : "smooth" });
+      setTimeout(function () { tutPlace(el, step); }, reduceMotion ? 30 : 320);
+    }, 40);
+  }
+  function tutEnd() {
+    var tut = document.getElementById("tut"); if (tut) tut.hidden = true;
+    try { localStorage.setItem("budget-tut-seen", "1"); } catch (e) {}
+  }
+  function tutStart() { tutShow(0); }
+  function maybeTut() {
+    var seen = false; try { seen = localStorage.getItem("budget-tut-seen") === "1"; } catch (e) {}
+    if (gIsOn() && isEmpty() && !seen) setTimeout(tutStart, 500);
+  }
   function monthsKept() {
     var ob = planRisparmio();
     return state.history.filter(hasReal).reduce(function (a, h) { return a + ((Number(h.saved) - ob >= -0.5) ? 1 : 0); }, 0);
@@ -1722,7 +1781,7 @@
         if (window.confirm("Su Google Drive ci sono già dei dati.\n\nOK = usa i dati di Drive su questo dispositivo\nAnnulla = tieni i dati attuali e sovrascrivi Drive")) { gApply(remote); return; }
       }
       return gUpload().then(gMarkSynced);
-    }).then(function () { gFetchProfile(); gSetOn(true); gUpdateUI(); gStatus("collegato ✓"); })
+    }).then(function () { gFetchProfile(); gSetOn(true); gUpdateUI(); gStatus("collegato ✓"); maybeTut(); })
       .catch(function () {
         gStatus("collegamento non riuscito");
         var ls = document.getElementById("loginScreen"), le = document.getElementById("loginErr");
@@ -1752,7 +1811,7 @@
     if (gIsOn()) {
       hideLogin();
       gStatus("collegato");
-      var pull = function () { gToken(false).then(function (t) { gFetchProfile(); return t; }).then(gFind).then(gDownload).then(function (remote) { if (gValid(remote)) gApply(remote); gStatus("sincronizzato ✓"); }).catch(function () { gStatus("collegato"); }); };
+      var pull = function () { gToken(false).then(function (t) { gFetchProfile(); return t; }).then(gFind).then(gDownload).then(function (remote) { if (gValid(remote)) gApply(remote); gStatus("sincronizzato ✓"); maybeTut(); }).catch(function () { gStatus("collegato"); maybeTut(); }); };
       if (gInit()) pull(); else setTimeout(function () { if (gInit()) pull(); else gStatus("collegato"); }, 2000);
     } else {
       showLogin();
@@ -1780,6 +1839,15 @@
       var o = d.hasAttribute("hidden");
       if (o) d.removeAttribute("hidden"); else d.setAttribute("hidden", "");
       b.setAttribute("aria-expanded", o ? "true" : "false");
+    });
+  })();
+  (function wireTut() {
+    var tn = document.getElementById("tutNext"); if (tn) tn.addEventListener("click", function () { tutShow(tutI + 1); });
+    var ts = document.getElementById("tutSkip"); if (ts) ts.addEventListener("click", tutEnd);
+    var tm = document.getElementById("tutMenu"); if (tm) tm.addEventListener("click", function () {
+      var mp = document.getElementById("menuPop"); if (mp) mp.setAttribute("hidden", "");
+      var mb = document.getElementById("menuBtn"); if (mb) mb.setAttribute("aria-expanded", "false");
+      tutStart();
     });
   })();
 
