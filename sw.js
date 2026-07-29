@@ -1,5 +1,5 @@
-var CACHE = "budget-v21";
-var ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg", "./icon-512.png"];
+var CACHE = "budget-v22";
+var ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg", "./icon-512.png", "./by.png"];
 
 self.addEventListener("install", function (e) {
   e.waitUntil(

@@ -438,6 +438,8 @@
   .acct-note { font-size: 11.5px; color: var(--faint); margin-top: 4px; line-height: 1.5; }
 
   footer.foot { margin-top: 34px; text-align: center; font-size: 12.5px; color: var(--faint); line-height: 1.6; }
+  .byline { display: flex; align-items: center; justify-content: flex-end; gap: 6px; margin-top: 12px; color: var(--faint); font-size: 12px; }
+  .by-img { width: 46px; height: 46px; object-fit: contain; mix-blend-mode: multiply; }
   .file-hidden { display: none; }
 
   /* Toast (annulla) */
@@ -739,6 +741,7 @@
 
   <footer class="foot">
     I tuoi dati sono salvati sul tuo Google Drive e sincronizzati in automatico. Con <b>Esporta backup</b> (menu ☰) puoi tenerne anche una copia su questo dispositivo.
+    <div class="byline"><span>by</span><img src="by.png" alt="" class="by-img"></div>
   </footer>
 </div>
 
