@@ -1536,7 +1536,7 @@
     { tab: "mese", sel: '.env[data-gid="fisse"]', title: "2. Le tue spese", text: "Aggiungi spese fisse, svago e cuscinetto nelle buste. Tocca l'intestazione per aprire una busta." },
     { tab: "mese", sel: '.env[data-gid="risparmi"]', title: "3. Il tuo obiettivo", text: "I Risparmi sono l'impegno da rispettare ogni mese: la pianta cresce quando lo mantieni." }
   ];
-  var tutI = 0, tutCurEl = null, tutCurStep = null, tutRaf = 0;
+  var tutI = 0, tutCurEl = null, tutCurStep = null, tutTimer = null;
   function tutPlace(el, step) {
     var tut = document.getElementById("tut"), spot = document.getElementById("tutSpot"), pop = document.getElementById("tutPop");
     if (!tut) return;
@@ -1544,7 +1544,6 @@
     document.getElementById("tutTitle").textContent = step.title;
     document.getElementById("tutText").textContent = step.text;
     document.getElementById("tutNext").textContent = (tutI >= TUT.length - 1) ? "Fine" : "Avanti";
-    tut.hidden = false;
     var vw = window.innerWidth, vh = window.innerHeight, ph = pop.offsetHeight || 150;
     if (el) {
       var r = el.getBoundingClientRect(), pad = 6;
@@ -1558,21 +1557,23 @@
       spot.style.display = "none";
       pop.style.left = "50%"; pop.style.top = "50%"; pop.style.transform = "translate(-50%,-50%)";
     }
-    tutLock(true);
   }
   function tutShow(i) {
     tutI = i;
     var step = TUT[i];
     if (!step) { tutEnd(); return; }
+    clearTimeout(tutTimer);
     tutLock(false);
     if (step.tab) setTab(step.tab);
-    setTimeout(function () {
+    var tut = document.getElementById("tut"); if (tut) tut.hidden = false;
+    tutTimer = setTimeout(function () {
       var el = document.querySelector(step.sel);
       if (el && el.scrollIntoView) el.scrollIntoView({ block: "center", behavior: "auto" });
-      setTimeout(function () { tutPlace(el, step); setTimeout(tutReposition, 300); }, 70);
-    }, 40);
+      tutTimer = setTimeout(function () { tutPlace(el, step); tutLock(true); }, 90);
+    }, 60);
   }
   function tutEnd() {
+    clearTimeout(tutTimer);
     var tut = document.getElementById("tut"); if (tut) tut.hidden = true;
     tutLock(false);
     try { localStorage.setItem("budget-tut-seen", "1"); } catch (e) {}
