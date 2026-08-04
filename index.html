@@ -151,19 +151,6 @@
   .alloc-txt b { font-size: 13px; font-weight: 750; font-variant-numeric: tabular-nums; }
   .alloc-txt span { font-size: 9.5px; color: var(--faint); text-transform: uppercase; letter-spacing: .07em; font-weight: 700; }
 
-  .toolbar { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
-  .btn {
-    border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink);
-    padding: 9px 15px; border-radius: 999px; font-size: 13px; font-weight: 650;
-    display: inline-flex; align-items: center; gap: 7px;
-    transition: background .16s, border-color .16s, transform .05s, box-shadow .16s;
-    box-shadow: var(--shadow-sm);
-  }
-  .btn:hover { background: var(--surface-2); border-color: var(--faint); }
-  .btn:active { transform: translateY(1px); }
-  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--accent) 65%, transparent); }
-  .btn.primary:hover { background: var(--accent-ink); border-color: var(--accent-ink); }
-  .btn svg { width: 15px; height: 15px; }
   .icon-btn { width: 40px; height: 40px; border-radius: 999px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--muted); display: grid; place-items: center; box-shadow: var(--shadow-sm); transition: background .15s, color .15s, border-color .15s; }
   .icon-btn:hover { color: var(--ink); border-color: var(--faint); background: var(--surface-2); }
   .icon-btn svg { width: 17px; height: 17px; }
@@ -208,9 +195,6 @@
   .backup-bar > span { flex: 1; font-weight: 600; line-height: 1.35; }
   .bb-btn { border: 0; background: var(--warn); color: #fff; font-weight: 700; font-size: 12.5px; padding: 7px 14px; border-radius: 8px; flex: none; }
   .bb-x { border: 0; background: transparent; color: var(--warn); font-size: 18px; line-height: 1; padding: 0 4px; cursor: pointer; flex: none; }
-  .saved-dot { font-size: 12px; color: var(--muted); display: inline-flex; align-items: center; gap: 7px; font-weight: 600; }
-  .saved-dot::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
-
   /* Schede (tab) */
   .tabs { display: flex; gap: 6px; overflow-x: auto; max-width: 1160px; margin: 0 auto; padding: 2px clamp(14px, 3.5vw, 34px) 12px; scrollbar-width: none; }
   .tabs::-webkit-scrollbar { display: none; }
@@ -269,10 +253,6 @@
   /* Sections */
   .section { margin-top: 32px; }
   .section:first-child { margin-top: 26px; }
-  .sec-head { display: flex; align-items: baseline; gap: 12px; margin: 0 4px 15px; flex-wrap: wrap; }
-  .sec-head h2 { font-size: 12.5px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--faint); }
-  .sec-head p { margin: 0; font-size: 13px; color: var(--muted); }
-
   /* Cards */
   .card {
     background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
@@ -302,35 +282,11 @@
   .tile.lead .val { color: #fff; }
   .tile.lead .sub { background: rgba(255,255,255,.16); color: #fff; }
 
-  .layout { display: grid; grid-template-columns: 1.32fr 1fr; gap: 22px; align-items: start; }
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
-
   /* Voci del mese */
-  .group { border-top: 1px solid var(--line); }
-  .group:first-child { border-top: 0; }
-  .group-head { display: flex; align-items: center; gap: 10px; padding: 15px 20px 9px; }
-  .group-head .g-name { font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
-  .group-head .g-tot { margin-left: auto; font-size: 14px; font-weight: 700; color: var(--ink); }
   .swatch { width: 11px; height: 11px; border-radius: 4px; flex: none; }
-
-  .rows { padding: 0 12px 8px; display: flex; flex-direction: column; gap: 4px; }
-  .row { display: grid; grid-template-columns: 1fr 118px auto; gap: 8px; align-items: center; padding: 3px 8px; border-radius: var(--radius-sm); }
-  .row.has-acct { grid-template-columns: 1fr 106px 40px 116px auto; }
-  .row:hover { background: var(--surface-2); }
-  .row input, .row select {
-    width: 100%; border: 1px solid transparent; background: transparent; color: inherit;
-    padding: 9px 10px; border-radius: 10px; font-size: 14px; transition: border-color .12s, background .12s, box-shadow .12s;
-  }
-  .row input:hover, .row select:hover { border-color: var(--line-strong); }
-  .row input:focus, .row select:focus { outline: none; border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 4px var(--accent-soft); }
   .amt-cell { position: relative; }
   .amt-cell .amt { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; padding-right: 22px; }
   .amt-cell .cur { position: absolute; right: 11px; top: 50%; transform: translateY(-50%); color: var(--faint); font-size: 12.5px; pointer-events: none; }
-  .rpct { font-size: 11.5px; color: var(--faint); text-align: right; font-variant-numeric: tabular-nums; }
-  .row select { -webkit-appearance: none; appearance: none; cursor: pointer; }
-  .acct-cell { position: relative; }
-  .acct-cell select { padding-right: 24px; }
-  .acct-cell::after { content: "▾"; position: absolute; right: 11px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--faint); font-size: 10px; }
   .del { border: 0; background: transparent; color: var(--faint); width: 30px; height: 30px; border-radius: 9px; font-size: 17px; line-height: 1; display: grid; place-items: center; transition: background .12s, color .12s; }
   .del:hover { background: var(--crit-soft); color: var(--crit); }
   .empty-hint { padding: 8px 12px 12px; color: var(--faint); font-size: 12.5px; font-style: italic; }
@@ -512,21 +468,12 @@
   @media (max-width: 1080px) {
     .summary { grid-template-columns: repeat(3, 1fr); }
   }
-  @media (max-width: 900px) {
-    .layout { grid-template-columns: 1fr; }
-    .two-col { grid-template-columns: 1fr; }
-  }
   @media (max-width: 640px) {
     .alloc { display: none; }
   }
   @media (max-width: 620px) {
     .summary { grid-template-columns: 1fr 1fr; }
     .tile.lead { grid-column: 1 / -1; }
-    .row.has-acct { grid-template-columns: 1fr 92px; }
-    .row.has-acct .rpct { display: none; }
-    .row.has-acct .acct-cell { grid-column: 1 / 2; }
-    .row.has-acct .del { grid-column: 2 / 3; justify-self: end; }
-    .saved-dot { display: none; }
   }
   @media (max-width: 620px) {
     /* Intestazione compatta */
