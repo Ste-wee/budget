@@ -413,6 +413,9 @@
   /* Andamento mensile */
   .hist-cap { padding: 12px 20px 2px; font-size: 11.5px; color: var(--faint); }
   .hist-cap b { color: var(--muted); }
+  .hist-chart { padding: 14px 20px 0; }
+  .hist-chart[hidden] { display: none; }
+  .hist-chart svg { display: block; max-width: 100%; height: auto; margin: 0 auto; }
   .hist-scroll { overflow-x: auto; }
   .hist-table { min-width: 540px; padding: 6px 12px 4px; display: flex; flex-direction: column; }
   .hist-row { display: grid; grid-template-columns: 172px 122px 118px 1fr 30px; gap: 8px; align-items: center; padding: 4px 8px; border-radius: 11px; }
@@ -688,9 +691,20 @@
   <section class="section panel" data-panel="analisi">
     <p class="panel-sub">Come vai mese per mese sull'obiettivo di risparmio.</p>
     <div class="card">
-      <div class="card-head"><h2>Andamento mensile</h2></div>
-      <div class="hist-cap">Il tuo obiettivo di risparmio è <b id="histBase">—</b>/mese. Scrivi quanto hai <b>messo via davvero</b> e l'esito si calcola da solo. <b>+</b> = più del promesso · <b>−</b> = meno.</div>
+      <div class="card-head">
+        <h2>Andamento mensile</h2>
+        <button class="hint-btn" id="histBtn" type="button" aria-expanded="false">💡 Come funziona</button>
+      </div>
+      <div class="hist-cap">Obiettivo di risparmio: <b id="histBase">—</b>/mese.</div>
       <div id="histBody"></div>
+    </div>
+    <div class="card sugg-card" id="histHelp" hidden>
+      <div class="card-head"><h2>Come funziona</h2></div>
+      <div class="sugg-list">
+        <div class="sugg good"><span class="ic">✍️</span><div class="body"><span class="st">Scrivi solo una cosa</span><span class="sb">Ogni mese, quanto hai <b>messo via davvero</b>. L'esito si calcola da solo, confrontandolo con l'obiettivo (il totale della busta Risparmi).</span></div></div>
+        <div class="sugg tip"><span class="ic">±</span><div class="body"><span class="st">Più o meno del promesso</span><span class="sb"><b>+</b> = hai messo via più del promesso · <b>−</b> = meno. Il mese conta come <b>mantenuto</b> se raggiungi l'obiettivo.</span></div></div>
+        <div class="sugg good"><span class="ic">📊</span><div class="body"><span class="st">Il grafico</span><span class="sb">Ogni barra è un mese: se supera la <b>linea tratteggiata</b> (l'obiettivo), promessa mantenuta. E la pianta in Panoramica cresce 🌱</span></div></div>
+      </div>
     </div>
   </section>
 
@@ -1343,6 +1357,8 @@
     var card = document.getElementById("histBody");
     if (!card) return;
     card.innerHTML = "";
+    var chart = document.createElement("div"); chart.className = "hist-chart"; chart.id = "histChart"; chart.hidden = true;
+    card.appendChild(chart);
     var rows = state.history.slice().sort(function (a, b) { return (a.ym || "").localeCompare(b.ym || ""); });
 
     if (rows.length === 0) {
@@ -1437,8 +1453,39 @@
       flag.className = "flag " + (ok ? "yes" : "no");
       flag.innerHTML = ok ? '<span class="fi">✓</span><span class="ft">Mantenuta</span>' : '<span class="fi">✗</span><span class="ft">Non mantenuta</span>';
     });
+    renderHistChart(obiettivo);
     updateHistorySummary(obiettivo);
     renderMotivation();
+  }
+
+  function shortYM(ym) {
+    if (!ym) return "";
+    var p = ym.split("-"), lab;
+    try { lab = new Date(Number(p[0]), Number(p[1]) - 1, 1).toLocaleDateString("it-IT", { month: "short" }).replace(".", ""); }
+    catch (e) { return ym; }
+    if (p[1] === "01") lab += " ’" + p[0].slice(2);
+    return lab;
+  }
+  function renderHistChart(ob) {
+    var el = document.getElementById("histChart");
+    if (!el) return;
+    var rows = state.history.filter(hasReal).slice().sort(function (a, b) { return (a.ym || "").localeCompare(b.ym || ""); }).slice(-12);
+    if (rows.length < 2) { el.hidden = true; el.innerHTML = ""; return; }
+    var maxV = Math.max(ob || 0, 1);
+    rows.forEach(function (h) { maxV = Math.max(maxV, Number(h.saved)); });
+    var slot = 42, pad = 10, W = pad * 2 + slot * rows.length, base = 118, H = 138, scale = 92 / maxV;
+    var yOb = base - (ob || 0) * scale;
+    var s = "";
+    rows.forEach(function (h, i) {
+      var v = Number(h.saved), bh = Math.max(2, v * scale), x = pad + slot * i + (slot - 26) / 2, y = base - bh;
+      var ok = v - ob >= -0.5;
+      s += '<rect x="' + x + '" y="' + y + '" width="26" height="' + bh + '" rx="7" fill="' + (ok ? "var(--accent)" : "var(--crit)") + '" opacity=".85"><title>' + formatYM(h.ym) + ": " + eur(v) + "</title></rect>";
+      s += '<text x="' + (pad + slot * i + slot / 2) + '" y="' + (base + 15) + '" text-anchor="middle" font-size="10.5" fill="var(--faint)">' + shortYM(h.ym) + "</text>";
+    });
+    s += '<line x1="' + pad + '" y1="' + yOb + '" x2="' + (W - pad) + '" y2="' + yOb + '" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="5 4" opacity=".55"/>';
+    s += '<text x="' + pad + '" y="' + (yOb - 5) + '" font-size="10" font-weight="700" fill="var(--muted)">obiettivo ' + eur(ob || 0) + "</text>";
+    el.hidden = false;
+    el.innerHTML = '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Grafico: risparmio mese per mese rispetto all\'obiettivo">' + s + "</svg>";
   }
 
   function updateHistorySummary(obiettivo) {
@@ -1659,6 +1706,7 @@
   }
   wireReveal("suggBtn", "suggCard");
   wireReveal("acctBtn", "acctCard");
+  wireReveal("histBtn", "histHelp");
 
   // ---------- Google Drive sync ----------
   var GID = "1067931384958-k03fd8rrqese9m92m4pevmmsnm5slh88.apps.googleusercontent.com";
