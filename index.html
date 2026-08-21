@@ -12,7 +12,28 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Gruzzolo">
-<script src="https://accounts.google.com/gsi/client" async></script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+  var app = initializeApp({
+    apiKey: "AIzaSyBkanocFD9rC18_vyK5U7YNvlC5C3U0scE",
+    authDomain: "gruzzolo-cc514.firebaseapp.com",
+    projectId: "gruzzolo-cc514",
+    storageBucket: "gruzzolo-cc514.firebasestorage.app",
+    messagingSenderId: "836297710306",
+    appId: "1:836297710306:web:7b31d59ca547e00f4c5cbb"
+  });
+  var auth = getAuth(app), db = getFirestore(app);
+  window.FB = {
+    onAuth: function (cb) { return onAuthStateChanged(auth, cb); },
+    signIn: function () { return signInWithPopup(auth, new GoogleAuthProvider()); },
+    signOut: function () { return signOut(auth); },
+    load: function (uid) { return getDoc(doc(db, "budgets", uid)).then(function (s) { return s.exists() ? s.data() : null; }); },
+    save: function (uid, data) { return setDoc(doc(db, "budgets", uid), data); }
+  };
+  window.dispatchEvent(new Event("fb-ready"));
+</script>
 <style>
   :root {
     color-scheme: light dark;
@@ -555,11 +576,11 @@
           <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
           Accedi con Google
         </button>
-        <div class="menu-status sub" id="gdriveStatus" hidden>Google Drive: collegato ✓</div>
+        <div class="menu-status sub" id="gdriveStatus" hidden>Sincronizzazione: collegato ✓</div>
         <div class="menu-status sub" id="gdriveTime" hidden>Ultimo salvataggio: —</div>
         <button class="menu-item" id="gdriveDisconnect" type="button" hidden>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-          Scollega Google Drive
+          Scollega account Google
         </button>
       </div>
     </div>
@@ -579,13 +600,13 @@
   <div class="login-card">
     <div class="login-logo"><svg viewBox="0 0 120 120" aria-hidden="true"><polygon points="21,76 75,64 51,86" fill="#F4CE5E"/><polygon points="51,34 79,62 45,62" fill="#E9BC46"/><polygon points="79,62 99,55 83,70" fill="#F2994A"/><line x1="51" y1="34" x2="51" y2="62" stroke="#0A5A4A" stroke-width="1.4" opacity=".4"/><line x1="45" y1="62" x2="75" y2="64" stroke="#0A5A4A" stroke-width="1.4" opacity=".4"/><text x="54" y="58" font-family="Georgia,serif" font-size="11" font-weight="bold" fill="#0A5A4A">€</text><circle cx="81" cy="61" r="2.2" fill="#0A3B31"/></svg></div>
     <h1 class="login-title">Gruzzolo</h1>
-    <p class="login-sub">Tieni fede al tuo obiettivo di risparmio.<br>Accedi per salvare e sincronizzare i dati sul tuo Google Drive, su tutti i dispositivi.</p>
+    <p class="login-sub">Tieni fede al tuo obiettivo di risparmio.<br>Accedi con Google per salvare i tuoi dati e ritrovarli su tutti i dispositivi.</p>
     <button class="login-google" id="loginGoogle" type="button">
       <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
       Accedi con Google
     </button>
     <p class="login-err" id="loginErr" hidden>Accesso non riuscito. Riprova.</p>
-    <p class="login-note">🔒 I dati restano nel tuo account Google. Nessun altro può vederli.</p>
+    <p class="login-note">🔒 I tuoi dati sono privati: li vedi solo tu, col tuo account Google.</p>
   </div>
 </div>
 
@@ -595,13 +616,6 @@
     <span id="backupBarMsg">Proteggi i tuoi dati: fai un backup ogni tanto.</span>
     <button class="bb-btn" id="backupBarExport" type="button">Esporta</button>
     <button class="bb-x" id="backupBarClose" type="button" aria-label="Chiudi">×</button>
-  </div>
-
-  <div class="backup-bar" id="syncBar" hidden>
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
-    <span>Accesso a Google scaduto: i dati sono al sicuro sul telefono, ma non su Drive.</span>
-    <button class="bb-btn" id="syncBarBtn" type="button">Ricollega</button>
-    <button class="bb-x" id="syncBarClose" type="button" aria-label="Chiudi">×</button>
   </div>
 
   <section class="section panel" data-panel="panoramica">
@@ -709,7 +723,7 @@
   </section>
 
   <footer class="foot">
-    I tuoi dati sono salvati sul tuo Google Drive e sincronizzati in automatico. Con <b>Esporta backup</b> (menu ☰) puoi tenerne anche una copia su questo dispositivo. <span class="byline">By <img src="by.png" alt="" class="by-img"></span>
+    I tuoi dati sono al sicuro nel cloud, visibili solo a te e sincronizzati in automatico su tutti i tuoi dispositivi. Con <b>Esporta backup</b> (menu ☰) puoi tenerne anche una copia su questo dispositivo. <span class="byline">By <img src="by.png" alt="" class="by-img"></span>
   </footer>
 </div>
 
@@ -1708,17 +1722,14 @@
   wireReveal("acctBtn", "acctCard");
   wireReveal("histBtn", "histHelp");
 
-  // ---------- Google Drive sync ----------
-  var GID = "1067931384958-k03fd8rrqese9m92m4pevmmsnm5slh88.apps.googleusercontent.com";
+  // ---------- sincronizzazione cloud (Firebase Auth + Firestore) ----------
   var GKEY = "budget-gdrive";
   var NAMEKEY = "budget-name";
-  var gTok = null, gExp = 0, gFileId = null, gTimer = null, gClient = null;
-  var gAuthLost = false, gPending = false;
+  var fbUser = null, gTimer = null, gPending = false, gJustClicked = false;
   var gProfileName = null; try { gProfileName = localStorage.getItem(NAMEKEY) || null; } catch (e) {}
   function gIsOn() { try { return localStorage.getItem(GKEY) === "on"; } catch (e) { return false; } }
   function gSetOn(v) { try { v ? localStorage.setItem(GKEY, "on") : localStorage.removeItem(GKEY); } catch (e) {} }
-  function gStatus(t) { var el = document.getElementById("gdriveStatus"); if (el) el.textContent = "Google Drive: " + t; }
-  function gSyncBar(show) { var el = document.getElementById("syncBar"); if (el) el.hidden = !show; }
+  function gStatus(t) { var el = document.getElementById("gdriveStatus"); if (el) el.textContent = "Sincronizzazione: " + t; }
   function isTyping() { var ae = document.activeElement; return !!(ae && /^(INPUT|SELECT|TEXTAREA)$/.test(ae.tagName)); }
   function fmtDT(ts) {
     if (!ts) return "—";
@@ -1735,13 +1746,10 @@
     if (gIsOn() && gProfileName) { el.textContent = "Ciao " + gProfileName + " 👋"; el.hidden = false; }
     else { el.hidden = true; }
   }
-  function gFetchProfile() {
-    return gFetch("https://www.googleapis.com/oauth2/v3/userinfo").then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (p) {
-        var n = p && (p.given_name || p.name);
-        if (n) { gProfileName = n; try { localStorage.setItem(NAMEKEY, n); } catch (e) {} renderGreeting(); }
-        return p;
-      }).catch(function () {});
+  function gSetName(user) {
+    var n = user && user.displayName ? String(user.displayName).trim().split(/\s+/)[0] : null;
+    if (n) { gProfileName = n; try { localStorage.setItem(NAMEKEY, n); } catch (e) {} }
+    renderGreeting();
   }
   function gUpdateUI() {
     var on = gIsOn();
@@ -1753,37 +1761,29 @@
     if (on) hideLogin();
     if (typeof updateBackupUI === "function") updateBackupUI();
   }
-  function gInit() {
-    if (gClient) return true;
-    if (!(window.google && google.accounts && google.accounts.oauth2)) return false;
-    gClient = google.accounts.oauth2.initTokenClient({ client_id: GID, scope: "https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/userinfo.profile", callback: function () {} });
-    return true;
+  function gUploadNow() {
+    if (!fbUser || !window.FB) return Promise.reject(new Error("off"));
+    return FB.save(fbUser.uid, { data: JSON.stringify(state), updated: Date.now() })
+      .then(function () { gPending = false; gMarkSynced(); gStatus("sincronizzato ✓"); });
   }
-  function gToken(interactive) {
-    return new Promise(function (resolve, reject) {
-      if (gTok && Date.now() < gExp - 60000) { resolve(gTok); return; }
-      if (!gInit()) { reject(new Error("gis")); return; }
-      var done = false;
-      var to = setTimeout(function () { if (!done) { done = true; reject(new Error("timeout")); } }, interactive ? 120000 : 8000);
-      gClient.callback = function (resp) { if (done) return; done = true; clearTimeout(to); if (resp && resp.access_token) { gTok = resp.access_token; gExp = Date.now() + (resp.expires_in || 3600) * 1000; resolve(gTok); } else reject(new Error("no-token")); };
-      gClient.error_callback = function () { if (done) return; done = true; clearTimeout(to); reject(new Error("err")); };
-      try { gClient.requestAccessToken({ prompt: interactive ? "" : "none" }); } catch (e) { if (!done) { done = true; clearTimeout(to); reject(e); } }
+  function gPull(interactive) {
+    if (!fbUser || !window.FB) return Promise.resolve();
+    return FB.load(fbUser.uid).then(function (docData) {
+      var remote = null;
+      try { remote = docData && docData.data ? JSON.parse(docData.data) : null; } catch (e) {}
+      if (gValid(remote)) {
+        var differs = true;
+        try { differs = JSON.stringify(remote) !== JSON.stringify(state); } catch (e) {}
+        if (interactive && differs && !isEmpty()) {
+          if (window.confirm("Nel cloud ci sono già dei dati.\n\nOK = usa i dati del cloud su questo dispositivo\nAnnulla = tieni i dati attuali e sovrascrivi il cloud")) gApply(remote);
+          else return gUploadNow();
+        } else {
+          gApply(remote);
+        }
+      } else if (!isEmpty()) {
+        return gUploadNow();
+      }
     });
-  }
-  function gFetch(url, opts) { opts = opts || {}; opts.headers = opts.headers || {}; opts.headers.Authorization = "Bearer " + gTok; return fetch(url, opts); }
-  function gFind() {
-    return gFetch("https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&fields=" + encodeURIComponent("files(id)") + "&q=" + encodeURIComponent("name='budget.json'"))
-      .then(function (r) { return r.json(); }).then(function (d) { gFileId = (d.files && d.files[0]) ? d.files[0].id : null; return gFileId; });
-  }
-  function gDownload() { if (!gFileId) return Promise.resolve(null); return gFetch("https://www.googleapis.com/drive/v3/files/" + gFileId + "?alt=media").then(function (r) { return r.ok ? r.json() : null; }); }
-  function gUpload() {
-    var body = JSON.stringify(state);
-    if (gFileId) return gFetch("https://www.googleapis.com/upload/drive/v3/files/" + gFileId + "?uploadType=media", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: body });
-    var b = "bnd" + gExp;
-    var meta = JSON.stringify({ name: "budget.json", parents: ["appDataFolder"] });
-    var mp = "--" + b + "\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n" + meta + "\r\n--" + b + "\r\nContent-Type: application/json\r\n\r\n" + body + "\r\n--" + b + "--";
-    return gFetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id", { method: "POST", headers: { "Content-Type": "multipart/related; boundary=" + b }, body: mp })
-      .then(function (r) { return r.json(); }).then(function (d) { if (d && d.id) gFileId = d.id; return d; });
   }
   function gValid(d) { return d && d.items && d.accounts; }
   function gApply(d) {
@@ -1798,70 +1798,62 @@
     persist(); renderGroups(); renderAccounts(); recompute(); renderHistory(); updateBackupUI(); gRenderTime();
   }
   function gConnect() {
+    var ls = document.getElementById("loginScreen"), le = document.getElementById("loginErr");
+    if (!window.FB) {
+      gStatus("connessione non disponibile");
+      if (le && ls && !ls.hidden) le.hidden = false;
+      return;
+    }
     gStatus("connessione…");
-    gToken(true).then(gFind).then(gDownload).then(function (remote) {
-      if (gValid(remote)) {
-        if (window.confirm("Su Google Drive ci sono già dei dati.\n\nOK = usa i dati di Drive su questo dispositivo\nAnnulla = tieni i dati attuali e sovrascrivi Drive")) { gApply(remote); return; }
-      }
-      return gUpload().then(gMarkSynced);
-    }).then(function () { gAuthLost = false; gSyncBar(false); gFetchProfile(); gSetOn(true); gUpdateUI(); gStatus("collegato ✓"); maybeTut(); if (gPending) gPush(); })
-      .catch(function () {
-        gStatus("collegamento non riuscito");
-        var ls = document.getElementById("loginScreen"), le = document.getElementById("loginErr");
-        if (le && ls && !ls.hidden) le.hidden = false;
-      });
+    gJustClicked = true;
+    FB.signIn().catch(function () {
+      gJustClicked = false;
+      gStatus("collegamento non riuscito");
+      if (le && ls && !ls.hidden) le.hidden = false;
+    });
   }
   function gDisconnect() {
-    var t = gTok; gSetOn(false); gTok = null; gExp = 0; gFileId = null; gProfileName = null;
-    gAuthLost = false; gPending = false; gSyncBar(false);
+    gPending = false; gProfileName = null;
     try { localStorage.removeItem(NAMEKEY); } catch (e) {}
-    gUpdateUI(); gStatus("non collegato");
-    showLogin();
-    try { if (t && window.google && google.accounts && google.accounts.oauth2) google.accounts.oauth2.revoke(t); } catch (e) {}
+    if (window.FB) { try { FB.signOut(); } catch (e) {} }
+    gSetOn(false); gUpdateUI(); gStatus("non collegato"); showLogin();
   }
   function gPush() {
     if (!gIsOn()) return;
     gPending = true;
-    if (gAuthLost) { gStatus("da sincronizzare"); return; }
     clearTimeout(gTimer);
-    gTimer = setTimeout(function tick() {
-      var needTok = !(gTok && Date.now() < gExp - 60000);
-      if (needTok && isTyping()) { gTimer = setTimeout(tick, 2000); return; }
-      gToken(false).then(function () {
-        return (gFileId ? gUpload() : gFind().then(gUpload))
-          .then(function () { gPending = false; gMarkSynced(); gStatus("sincronizzato ✓"); })
-          .catch(function () { gStatus("da sincronizzare"); });
-      }, function () { gAuthLost = true; gSyncBar(true); gStatus("accesso da rinnovare"); });
+    gTimer = setTimeout(function () {
+      gUploadNow().catch(function () { gStatus("da sincronizzare"); });
     }, 1500);
   }
   (function gBoot() {
     var d = document.getElementById("gdriveDisconnect"); if (d) d.addEventListener("click", gDisconnect);
     var cn = document.getElementById("gdriveConnect"); if (cn) cn.addEventListener("click", gConnect);
     var lg = document.getElementById("loginGoogle"); if (lg) lg.addEventListener("click", function () { var le = document.getElementById("loginErr"); if (le) le.hidden = true; gConnect(); });
-    var sb = document.getElementById("syncBarBtn"); if (sb) sb.addEventListener("click", function () {
-      gToken(true).then(function () { gAuthLost = false; gSyncBar(false); gStatus("collegato ✓"); if (gPending) gPush(); })
-        .catch(function () { gStatus("collegamento non riuscito"); });
-    });
-    var sx = document.getElementById("syncBarClose"); if (sx) sx.addEventListener("click", function () { gSyncBar(false); });
     document.addEventListener("visibilitychange", function () {
-      if (document.visibilityState !== "visible" || !gIsOn() || !gAuthLost) return;
-      gToken(false).then(function () { gAuthLost = false; gSyncBar(false); if (gPending) gPush(); }).catch(function () {});
+      if (document.visibilityState === "visible" && fbUser && gPending) gPush();
     });
     gUpdateUI();
-    if (gIsOn()) {
-      hideLogin();
-      gStatus("collegato");
-      var pull = function () {
-        gToken(false).catch(function (e) { gAuthLost = true; gSyncBar(true); gStatus("accesso da rinnovare"); throw e; })
-          .then(function (t) { gFetchProfile(); return t; })
-          .then(gFind).then(gDownload)
-          .then(function (remote) { if (gValid(remote)) gApply(remote); gStatus("sincronizzato ✓"); maybeTut(); })
-          .catch(function () { if (!gAuthLost) gStatus("collegato"); maybeTut(); });
-      };
-      if (gInit()) pull(); else setTimeout(function () { if (gInit()) pull(); else gStatus("collegato"); }, 2000);
-    } else {
-      showLogin();
+    if (gIsOn()) { hideLogin(); gStatus("collegato"); } else { showLogin(); }
+    var wired = false;
+    function wireFB() {
+      if (wired || !window.FB) return;
+      wired = true;
+      FB.onAuth(function (user) {
+        fbUser = user || null;
+        if (user) {
+          var inter = gJustClicked; gJustClicked = false;
+          gSetOn(true); gSetName(user); gUpdateUI(); gStatus("collegato ✓");
+          gPull(inter)
+            .then(function () { gStatus("sincronizzato ✓"); maybeTut(); if (gPending) gPush(); })
+            .catch(function () { gStatus("collegato"); maybeTut(); });
+        } else {
+          gSetOn(false); gUpdateUI(); gStatus("non collegato"); showLogin();
+        }
+      });
     }
+    window.addEventListener("fb-ready", wireFB);
+    wireFB();
   })();
 
   // ---------- boot ----------
