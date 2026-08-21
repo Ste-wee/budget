@@ -1,4 +1,4 @@
-var CACHE = "budget-v38";
+var CACHE = "budget-v39";
 var ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg", "./icon-512.png", "./by.png"];
 
 self.addEventListener("install", function (e) {
@@ -17,13 +17,25 @@ self.addEventListener("activate", function (e) {
 
 self.addEventListener("fetch", function (e) {
   if (e.request.method !== "GET") return;
+  var url = e.request.url;
+  var sameOrigin = url.indexOf(self.location.origin) === 0;
+  var sdk = url.indexOf("https://www.gstatic.com/firebasejs/") === 0;
+  // Gestiamo solo i file dell'app e i moduli SDK (URL stabili, cacheabili).
+  // Il traffico verso le API (Firestore, auth) passa dritto alla rete: URL sempre
+  // diversi che gonfierebbero la cache, e offline deve fallire con un errore di
+  // rete vero, non ricevere l'HTML dell'app.
+  if (!sameOrigin && !sdk) return;
   e.respondWith(
     fetch(e.request).then(function (res) {
       var copy = res.clone();
       caches.open(CACHE).then(function (c) { try { c.put(e.request, copy); } catch (_) {} });
       return res;
     }).catch(function () {
-      return caches.match(e.request).then(function (m) { return m || caches.match("./index.html"); });
+      return caches.match(e.request).then(function (m) {
+        if (m) return m;
+        if (sameOrigin) return caches.match("./index.html");
+        throw new Error("offline");
+      });
     })
   );
 });
