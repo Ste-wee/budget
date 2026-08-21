@@ -12,6 +12,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Gruzzolo">
+<script>try { if (localStorage.getItem("budget-gdrive") !== "on") document.documentElement.classList.add("no-auth"); } catch (e) {}</script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
   import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
@@ -192,6 +193,7 @@
   .menu-item[hidden], .menu-status[hidden], .menu-sep[hidden] { display: none; }
   .login-screen { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; background: radial-gradient(900px 520px at 50% -8%, var(--accent-soft), transparent 68%), var(--ground); animation: loginIn .3s ease; }
   .login-screen[hidden] { display: none; }
+  html.no-auth .login-screen[hidden] { display: flex; } /* overlay visibile dal primo paint quando non si è loggati */
   .login-card { width: 100%; max-width: 380px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 36px 28px 26px; text-align: center; }
   .login-logo { width: 66px; height: 66px; margin: 0 auto 18px; border-radius: 20px; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 12px 28px -12px var(--accent); }
   .mark svg, .login-logo svg { width: 76%; height: 76%; display: block; }
@@ -1733,8 +1735,8 @@
   }
   function gRenderTime() { var el = document.getElementById("gdriveTime"); if (el) el.textContent = "Ultimo salvataggio: " + fmtDT(state.lastSync); }
   function gMarkSynced() { state.lastSync = Date.now(); persist(); gRenderTime(); }
-  function showLogin() { var el = document.getElementById("loginScreen"); if (el) el.hidden = false; }
-  function hideLogin() { var el = document.getElementById("loginScreen"); if (el) el.hidden = true; }
+  function showLogin() { var el = document.getElementById("loginScreen"); if (el) el.hidden = false; document.documentElement.classList.add("no-auth"); }
+  function hideLogin() { var el = document.getElementById("loginScreen"); if (el) el.hidden = true; document.documentElement.classList.remove("no-auth"); }
   function renderGreeting() {
     var el = document.getElementById("greeting");
     if (!el) return;
