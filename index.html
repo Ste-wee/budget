@@ -827,13 +827,8 @@
     var lb = document.getElementById("lastBackup");
     if (lb) lb.textContent = "Ultimo backup: " + (state.lastBackup == null ? "mai" : (days <= 0 ? "oggi" : (days === 1 ? "ieri" : days + " giorni fa")));
     var chip = document.getElementById("dirtyChip"); if (chip) chip.hidden = synced || !state.dirty;
-    var hasData = (typeof isEmpty === "function") ? !isEmpty() : true;
-    var show = synced
-      ? (hasData && (state.lastBackup == null || days >= 30) && !reminderDismissed)
-      : (!!state.dirty && (state.lastBackup == null || days >= 7) && !reminderDismissed);
+    var show = !synced && !!state.dirty && (state.lastBackup == null || days >= 7) && !reminderDismissed;
     var mb = document.getElementById("menuBtn"); if (mb) mb.classList.toggle("has-dot", show);
-    var msg = document.getElementById("backupBarMsg");
-    if (msg) msg.textContent = synced ? "Consiglio: ogni tanto esporta una copia di sicurezza." : "Proteggi i tuoi dati: fai un backup ogni tanto.";
     var bar = document.getElementById("backupBar"); if (bar) bar.hidden = !show;
   }
   function nid(p) { state.seq = (state.seq || 100) + 1; return p + state.seq; }
