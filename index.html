@@ -444,6 +444,9 @@
   /* Andamento mensile */
   .hist-cap { padding: 12px 20px 2px; font-size: 11.5px; color: var(--faint); }
   .hist-cap b { color: var(--muted); }
+  .goal-inp { width: 62px; font: inherit; font-size: 12.5px; font-weight: 800; color: var(--ink); text-align: right; background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 3px 5px; font-variant-numeric: tabular-nums; }
+  .goal-inp:hover { border-color: var(--line-strong); }
+  .goal-inp:focus { outline: none; border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 4px var(--accent-soft); }
   .hist-chart { padding: 14px 20px 0; }
   .hist-chart[hidden] { display: none; }
   .hist-chart svg { display: block; max-width: 100%; height: auto; margin: 0 auto; }
@@ -719,7 +722,7 @@
         <h2>Andamento mensile</h2>
         <button class="hint-btn" id="histBtn" type="button" aria-expanded="false">💡 Come funziona</button>
       </div>
-      <div class="hist-cap">Obiettivo di risparmio: <b id="histBase">—</b>/mese.</div>
+      <div class="hist-cap">Obiettivo di risparmio: <input id="histBase" class="goal-inp" type="number" min="0" step="10" inputmode="decimal" aria-label="Obiettivo di risparmio mensile"> €/mese.</div>
       <div id="histBody"></div>
     </div>
     <div class="card sugg-card" id="histHelp" hidden>
@@ -803,6 +806,9 @@
   if (state.dirty === undefined) state.dirty = false;
   if (state.lastBackup === undefined) state.lastBackup = null;
   if (state.lastSync === undefined) state.lastSync = null;
+  /* obiettivo fisso: si imposta una volta, non segue più le modifiche al piano
+     (così i mesi passati restano giudicati con l'asticella di quando li hai scritti) */
+  if (state.goal == null) state.goal = groupTotal("risparmi");
 
   function load() {
     try {
@@ -1380,7 +1386,7 @@
       return s.charAt(0).toUpperCase() + s.slice(1);
     } catch (e) { return ym; }
   }
-  function planRisparmio() { return groupTotal("risparmi"); }
+  function goalVal() { var g = Number(state.goal); return isFinite(g) && g > 0 ? g : 0; }
   function hasReal(h) { return h.saved != null && h.saved !== "" && !isNaN(Number(h.saved)); }
 
   function renderHistory() {
@@ -1463,9 +1469,9 @@
   }
 
   function updateHistoryComputed() {
-    var obiettivo = planRisparmio();
+    var obiettivo = goalVal();
     var hb = document.getElementById("histBase");
-    if (hb) hb.textContent = eur(obiettivo);
+    if (hb && document.activeElement !== hb) hb.value = obiettivo || "";
     state.history.forEach(function (h) {
       var row = document.querySelector('.hist-row[data-id="' + h.id + '"]');
       if (!row) return;
@@ -1501,19 +1507,27 @@
     if (!el) return;
     var rows = state.history.filter(hasReal).slice().sort(function (a, b) { return (a.ym || "").localeCompare(b.ym || ""); }).slice(-12);
     if (rows.length < 2) { el.hidden = true; el.innerHTML = ""; return; }
-    var maxV = Math.max(ob || 0, 1);
-    rows.forEach(function (h) { maxV = Math.max(maxV, Number(h.saved)); });
-    var slot = 42, pad = 10, W = pad * 2 + slot * rows.length, base = 118, H = 138, scale = 92 / maxV;
-    var yOb = base - (ob || 0) * scale;
+    /* scala FISSA: il fondo scala è il doppio dell'obiettivo, così la linea tratteggiata
+       sta sempre a metà altezza e i mesi normali restano leggibili anche con un mese
+       fuori scala (es. il mese del TFR), che viene tagliato in cima con la cifra scritta sopra */
+    var goal = ob || 0;
+    var top = goal > 0 ? goal * 2 : 1;
+    var slot = 42, pad = 12, base = 118, H = 140, scale = 92 / top;
+    var W = Math.max(pad * 2 + slot * rows.length, 300);
+    var startX = (W - slot * rows.length) / 2;
+    var yOb = base - goal * scale;
     var s = "";
     rows.forEach(function (h, i) {
-      var v = Number(h.saved), bh = Math.max(2, v * scale), x = pad + slot * i + (slot - 26) / 2, y = base - bh;
-      var ok = v - ob >= -0.5;
-      s += '<rect x="' + x + '" y="' + y + '" width="26" height="' + bh + '" rx="7" fill="' + (ok ? "var(--accent)" : "var(--crit)") + '" opacity=".85"><title>' + formatYM(h.ym) + ": " + eur(v) + "</title></rect>";
-      s += '<text x="' + (pad + slot * i + slot / 2) + '" y="' + (base + 15) + '" text-anchor="middle" font-size="10.5" fill="var(--faint)">' + shortYM(h.ym) + "</text>";
+      var v = Number(h.saved), cx = startX + slot * i + slot / 2;
+      var clipped = v > top;
+      var bh = Math.max(2, Math.min(v, top) * scale), y = base - bh;
+      var ok = v - goal >= -0.5;
+      s += '<rect x="' + (cx - 13) + '" y="' + y + '" width="26" height="' + bh + '" rx="7" fill="' + (ok ? "var(--accent)" : "var(--crit)") + '" opacity=".85"><title>' + formatYM(h.ym) + ": " + eur(v) + "</title></rect>";
+      if (clipped) s += '<text x="' + cx + '" y="' + (y - 5) + '" text-anchor="middle" font-size="9.5" font-weight="700" fill="var(--muted)">' + eur(v) + "</text>";
+      s += '<text x="' + cx + '" y="' + (base + 15) + '" text-anchor="middle" font-size="10.5" fill="var(--faint)">' + shortYM(h.ym) + "</text>";
     });
     s += '<line x1="' + pad + '" y1="' + yOb + '" x2="' + (W - pad) + '" y2="' + yOb + '" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="5 4" opacity=".55"/>';
-    s += '<text x="' + pad + '" y="' + (yOb - 5) + '" font-size="10" font-weight="700" fill="var(--muted)">obiettivo ' + eur(ob || 0) + "</text>";
+    s += '<text x="' + pad + '" y="' + (yOb - 5) + '" font-size="10" font-weight="700" fill="var(--muted)">obiettivo ' + eur(goal) + "</text>";
     el.hidden = false;
     el.innerHTML = '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Grafico: risparmio mese per mese rispetto all\'obiettivo">' + s + "</svg>";
   }
@@ -1521,7 +1535,7 @@
   function updateHistorySummary(obiettivo) {
     var el = document.getElementById("histSum");
     if (!el) return;
-    if (obiettivo == null) obiettivo = planRisparmio();
+    if (obiettivo == null) obiettivo = goalVal();
     var withReal = state.history.filter(hasReal).slice().sort(function (a, b) { return (a.ym || "").localeCompare(b.ym || ""); });
     var n = withReal.length;
     if (n === 0) {
@@ -1626,7 +1640,7 @@
     if (gIsOn() && isEmpty() && !seen) setTimeout(tutStart, 500);
   }
   function monthsKept() {
-    var ob = planRisparmio();
+    var ob = goalVal();
     return state.history.filter(hasReal).reduce(function (a, h) { return a + ((Number(h.saved) - ob >= -0.5) ? 1 : 0); }, 0);
   }
   function plantStage(k) { var s = 0; for (var i = 0; i < PLANT_TH.length; i++) { if (k >= PLANT_TH[i]) s = i; } return s; }
@@ -1734,6 +1748,14 @@
       else { c.setAttribute("hidden", ""); b.setAttribute("aria-expanded", "false"); }
     });
   }
+  (function wireGoal() {
+    var g = document.getElementById("histBase");
+    if (!g) return;
+    g.addEventListener("input", function () {
+      state.goal = g.value === "" ? 0 : Number(g.value);
+      save(); updateHistoryComputed();
+    });
+  })();
   wireReveal("suggBtn", "suggCard");
   wireReveal("acctBtn", "acctCard");
   wireReveal("histBtn", "histHelp");
@@ -1818,6 +1840,7 @@
     if (state.dirty === undefined) state.dirty = false;
     if (state.lastBackup === undefined) state.lastBackup = null;
     if (state.lastSync === undefined) state.lastSync = null;
+    if (state.goal == null) state.goal = groupTotal("risparmi");
     persist(); gClearPending(); renderGroups(); renderAccounts(); recompute(); renderHistory(); updateBackupUI(); gRenderTime();
   }
   function gConnect() {
