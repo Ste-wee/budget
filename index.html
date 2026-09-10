@@ -1505,8 +1505,9 @@
   function renderHistChart(ob) {
     var el = document.getElementById("histChart");
     if (!el) return;
-    var rows = state.history.filter(hasReal).slice().sort(function (a, b) { return (a.ym || "").localeCompare(b.ym || ""); }).slice(-12);
-    if (rows.length < 2) { el.hidden = true; el.innerHTML = ""; return; }
+    /* il grafico resta sempre visibile: i mesi non ancora compilati tengono il loro posto (solo etichetta) */
+    var rows = state.history.slice().sort(function (a, b) { return (a.ym || "").localeCompare(b.ym || ""); }).slice(-12);
+    if (rows.length === 0) { el.hidden = true; el.innerHTML = ""; return; }
     /* scala FISSA: il fondo scala è il doppio dell'obiettivo, così la linea tratteggiata
        sta sempre a metà altezza e i mesi normali restano leggibili anche con un mese
        fuori scala (es. il mese del TFR), che viene tagliato in cima con la cifra scritta sopra */
@@ -1518,7 +1519,12 @@
     var yOb = base - goal * scale;
     var s = "";
     rows.forEach(function (h, i) {
-      var v = Number(h.saved), cx = startX + slot * i + slot / 2;
+      var cx = startX + slot * i + slot / 2;
+      if (!hasReal(h)) {
+        s += '<text x="' + cx + '" y="' + (base + 15) + '" text-anchor="middle" font-size="10.5" fill="var(--faint)" opacity=".55">' + shortYM(h.ym) + "</text>";
+        return;
+      }
+      var v = Number(h.saved);
       var clipped = v > top;
       var bh = Math.max(2, Math.min(v, top) * scale), y = base - bh;
       var ok = v - goal >= -0.5;
